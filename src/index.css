@@ -1,0 +1,50 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,500&family=Great+Vibes&display=swap");
+@import "tailwindcss";
+
+@theme {
+  /* Chocolat & beige - palette du mariage */
+  --color-chocolate: #4a2c1d;
+  --color-chocolate-dark: #2b1810;
+  --color-chocolate-light: #7a4a2f;
+  --color-beige: #f6ecdd;
+  --color-beige-dark: #e3cba5;
+  --color-gold: #c9a227;
+  --color-cream: #fbf5eb;
+
+  --color-primary: var(--color-chocolate);
+  --color-secondary: var(--color-chocolate-dark);
+  --color-soft-background: var(--color-beige);
+  --color-accent: var(--color-gold);
+
+  --font-display: "Playfair Display", "Poppins", serif;
+  --font-script: "Great Vibes", cursive;
+}
+
+:root {
+  font-family: "Poppins", sans-serif;
+  color-scheme: light;
+}
+
+h1,
+h2,
+h3,
+h4,
+.font-display {
+  font-family: "Playfair Display", serif;
+}
+
+.font-script {
+  font-family: "Great Vibes", cursive;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-beige);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-beige-dark);
+  border-radius: 999px;
+}
