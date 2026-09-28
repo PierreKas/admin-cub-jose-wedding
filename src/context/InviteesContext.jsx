@@ -19,11 +19,10 @@ const seed = () => {
     createdAt: new Date(now - (minutesAgo + 60) * 60000).toISOString(),
   });
   return [
-    mk("Pierre Kasanani", "couple", "present", 42),
-    mk("Grace Mumbere", "single", "present", 15),
-    mk("Familles Nyenyezi", "couple", "attente", 0),
-    mk("Patrick Dushimana", "single", "attente", 0),
-    mk("Prince Ishimwe", "single", "attente", 0),
+    mk("Alice Kasanani", "couple", "present", 42),
+    mk("Aline Kasanani", "single", "present", 15),
+    mk("Simeon Kasanani", "couple", "attente", 0),
+    mk("Moise Biringiro", "single", "attente", 0),
   ];
 };
 
