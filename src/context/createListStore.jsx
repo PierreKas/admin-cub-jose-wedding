@@ -19,12 +19,13 @@ export function createListStore(api) {
   const Ctx = createContext(null);
 
   function Provider({ children }) {
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated, role } = useAuth();
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    // Tables/Drinks admin CRUD is admin-only (JwtAuthFilter) - a Protocol account never needs this list.
     const refresh = useCallback(async () => {
-      if (!isAuthenticated) {
+      if (!isAuthenticated || role !== "ADMIN") {
         setItems([]);
         setLoading(false);
         return;
@@ -32,10 +33,12 @@ export function createListStore(api) {
       setLoading(true);
       try {
         setItems(await api.list());
+      } catch {
+        setItems([]);
       } finally {
         setLoading(false);
       }
-    }, [isAuthenticated]);
+    }, [isAuthenticated, role]);
 
     useEffect(() => {
       refresh();

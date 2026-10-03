@@ -1,8 +1,9 @@
-import { BrowserRouter as Router, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter as Router, Navigate, Outlet, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { InviteesProvider } from "./context/InviteesContext";
 import { DrinksProvider } from "./context/DrinksContext";
 import { TablesProvider } from "./context/TablesContext";
+import { UsersProvider } from "./context/UsersContext";
 import RequireAuth from "./components/RequireAuth";
 import AdminLayout from "./components/AdminLayout";
 import LoginPage from "./pages/LoginPage";
@@ -13,6 +14,7 @@ import InviteeDetailPage from "./pages/InviteeDetailPage";
 import ScannerPage from "./pages/ScannerPage";
 import TablesPage from "./pages/TablesPage";
 import DrinksPage from "./pages/DrinksPage";
+import UsersPage from "./pages/UsersPage";
 import PublicInvitationPage from "./pages/PublicInvitationPage";
 
 function App() {
@@ -21,42 +23,50 @@ function App() {
       <InviteesProvider>
         <TablesProvider>
           <DrinksProvider>
-            <Router>
-              <Routes>
-                <Route path="/" element={<Navigate to="/admin" replace />} />
-                <Route path="/login" element={<LoginPage />} />
-                <Route
-                  path="/invitation/:id"
-                  element={<PublicInvitationPage />}
-                />
-
-                <Route
-                  path="/admin"
-                  element={
-                    <RequireAuth>
-                      <AdminLayout />
-                    </RequireAuth>
-                  }
-                >
-                  <Route index element={<DashboardPage />} />
-                  <Route path="invites" element={<InviteesListPage />} />
+            <UsersProvider>
+              <Router>
+                <Routes>
+                  <Route path="/" element={<Navigate to="/admin" replace />} />
+                  <Route path="/login" element={<LoginPage />} />
                   <Route
-                    path="invites/nouveau"
-                    element={<InviteeFormPage />}
+                    path="/invitation/:id"
+                    element={<PublicInvitationPage />}
                   />
-                  <Route path="invites/:id" element={<InviteeDetailPage />} />
-                  <Route
-                    path="invites/:id/modifier"
-                    element={<InviteeFormPage />}
-                  />
-                  <Route path="tables" element={<TablesPage />} />
-                  <Route path="boissons" element={<DrinksPage />} />
-                  <Route path="scanner" element={<ScannerPage />} />
-                </Route>
 
-                <Route path="*" element={<Navigate to="/admin" replace />} />
-              </Routes>
-            </Router>
+                  <Route
+                    path="/admin"
+                    element={
+                      <RequireAuth>
+                        <AdminLayout />
+                      </RequireAuth>
+                    }
+                  >
+                    {/* Admin-only pages - a Protocol account is redirected to /admin/scanner (RequireAuth) */}
+                    <Route element={<RequireAuth roles={["ADMIN"]}><Outlet /></RequireAuth>}>
+                      <Route index element={<DashboardPage />} />
+                      <Route path="invites" element={<InviteesListPage />} />
+                      <Route
+                        path="invites/nouveau"
+                        element={<InviteeFormPage />}
+                      />
+                      <Route path="invites/:id" element={<InviteeDetailPage />} />
+                      <Route
+                        path="invites/:id/modifier"
+                        element={<InviteeFormPage />}
+                      />
+                      <Route path="tables" element={<TablesPage />} />
+                      <Route path="boissons" element={<DrinksPage />} />
+                      <Route path="utilisateurs" element={<UsersPage />} />
+                    </Route>
+
+                    {/* Both ADMIN and PROTOCOL reach the scanner */}
+                    <Route path="scanner" element={<ScannerPage />} />
+                  </Route>
+
+                  <Route path="*" element={<Navigate to="/admin" replace />} />
+                </Routes>
+              </Router>
+            </UsersProvider>
           </DrinksProvider>
         </TablesProvider>
       </InviteesProvider>

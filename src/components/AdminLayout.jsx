@@ -8,22 +8,28 @@ import {
   Menu,
   QrCode,
   Table2,
+  UserCog,
   Users,
   X,
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { wedding } from "../constants/wedding";
 
+// No `roles` = visible to every logged-in role (only the scanner qualifies - a Protocol account can't reach anything else, see RequireAuth in App.jsx).
 const navItems = [
-  { to: "/admin", label: "Tableau de bord", icon: LayoutDashboard, end: true },
-  { to: "/admin/invites", label: "Invités", icon: Users },
-  { to: "/admin/tables", label: "Tables", icon: Table2 },
-  { to: "/admin/boissons", label: "Boissons", icon: GlassWater },
+  { to: "/admin", label: "Tableau de bord", icon: LayoutDashboard, end: true, roles: ["ADMIN"] },
+  { to: "/admin/invites", label: "Invités", icon: Users, roles: ["ADMIN"] },
+  { to: "/admin/tables", label: "Tables", icon: Table2, roles: ["ADMIN"] },
+  { to: "/admin/boissons", label: "Boissons", icon: GlassWater, roles: ["ADMIN"] },
+  { to: "/admin/utilisateurs", label: "Utilisateurs", icon: UserCog, roles: ["ADMIN"] },
   { to: "/admin/scanner", label: "Scanner QR", icon: QrCode },
 ];
 
+const ROLE_LABELS = { ADMIN: "Administrateur", PROTOCOL: "Protocole" };
+
 const SidebarContent = ({ onNavigate }) => {
-  const { logout } = useAuth();
+  const { logout, role, username } = useAuth();
+  const visibleItems = navItems.filter((item) => !item.roles || item.roles.includes(role));
 
   return (
     <div className="h-full flex flex-col bg-secondary text-beige">
@@ -44,7 +50,7 @@ const SidebarContent = ({ onNavigate }) => {
       </div>
 
       <nav className="flex-1 px-3 py-6 space-y-1">
-        {navItems.map((item) => (
+        {visibleItems.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
@@ -67,14 +73,14 @@ const SidebarContent = ({ onNavigate }) => {
       <div className="px-4 py-5 border-t border-white/10">
         <div className="flex items-center gap-3 px-2 mb-3">
           <span className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center text-cream font-semibold text-sm shrink-0">
-            A
+            {username ? username.charAt(0).toUpperCase() : "?"}
           </span>
           <span className="min-w-0">
             <span className="block text-sm font-semibold text-cream truncate">
-              Administrateur
+              {username || "Compte mariage"}
             </span>
             <span className="block text-xs text-beige-dark/70">
-              Compte mariage
+              {ROLE_LABELS[role] || "Compte mariage"}
             </span>
           </span>
         </div>

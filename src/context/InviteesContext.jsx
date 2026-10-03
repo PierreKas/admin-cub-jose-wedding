@@ -12,12 +12,16 @@ import {
 } from "../api/inviteesApi";
 
 export const InviteesProvider = ({ children }) => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, role } = useAuth();
   const [invitees, setInvitees] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // The full roster is admin-only (see JwtAuthFilter) - a Protocol account
+  // never needs it, only single-invitee lookups after a scan (getInvitee
+  // below reads from this list, but Protocol's flow never calls it; it
+  // reads straight off the scan/checkin API responses instead).
   const refresh = useCallback(async () => {
-    if (!isAuthenticated) {
+    if (!isAuthenticated || role !== "ADMIN") {
       setInvitees([]);
       setLoading(false);
       return;
@@ -25,10 +29,12 @@ export const InviteesProvider = ({ children }) => {
     setLoading(true);
     try {
       setInvitees(await listInvitees());
+    } catch {
+      setInvitees([]);
     } finally {
       setLoading(false);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, role]);
 
   useEffect(() => {
     refresh();

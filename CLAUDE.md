@@ -103,18 +103,40 @@ backend was built, to keep that a pure data-layer swap.
   `WEDDING_CODE` in the same file is the secret embedded in every QR;
   change it if it ever leaks.
 
-## Auth
+## Auth & roles
 
 `context/AuthContext.jsx` calls `POST /api/auth/login` (`api/authApi.js`)
-and holds the returned JWT via `api/apiClient.js`'s `setAuthToken` -
-persisted in `sessionStorage` (`cj-wedding.admin-token.v1`, read
-synchronously at module load so it's available before any Provider's
-mount effect fires) gating everything under `/admin` via
-`components/RequireAuth.jsx`. A 401 from any API call (expired/invalid
-token) triggers `apiClient`'s `unauthorizedHandler`, which logs the admin
-out everywhere, not just on the request that happened to fail. The admin
-account itself is backend-side config (env vars, no accounts table) -
-see `backend/README.md`.
+and holds the returned JWT + `role` + `username` via `api/apiClient.js`'s
+`setAuthToken` and its own sessionStorage keys (`cj-wedding.admin-token.v1`,
+`...-role.v1`, `...-username.v1` - all read synchronously at module/mount
+time so they're available before any Provider's effect fires) gating
+everything under `/admin` via `components/RequireAuth.jsx`. A 401 from any
+API call (expired/invalid token) triggers `apiClient`'s
+`unauthorizedHandler`, which logs out everywhere, not just on the request
+that happened to fail.
+
+Two roles, `"ADMIN"` and `"PROTOCOL"` (see root `CLAUDE.md`). `RequireAuth`
+takes an optional `roles` prop - in `App.jsx`, every admin-only route is
+wrapped in one shared `<RequireAuth roles={["ADMIN"]}><Outlet/></RequireAuth>`
+layout route rather than repeating the check per-page; a Protocol account
+hitting any of them (or typing the URL directly) is redirected to
+`/admin/scanner`, not `/login` (they ARE logged in, just the wrong role).
+`AdminLayout.jsx`'s `navItems` each carry an optional `roles` array (absent
+= every role, which in practice means only "Scanner QR") so the sidebar
+itself never shows a link a Protocol account can't use.
+`InviteesContext`/`createListStore`'s list-fetch additionally checks
+`role === "ADMIN"` client-side before calling the (admin-only,
+403-otherwise) list endpoints, so a Protocol session never fires a doomed
+request for the full roster/tables/drinks list in the first place -
+`ScannerPage.jsx`'s "Test du scanner" panel (which needs that roster to
+populate its simulate-a-scan buttons) is hidden entirely for Protocol
+rather than rendered empty.
+
+Accounts themselves are managed from `/admin/utilisateurs`
+(`UsersPage.jsx` -> `context/UsersContext.jsx` -> `api/usersApi.js`,
+admin-only) - create (username/password/role) and delete, no rename/edit.
+The backend-side bootstrap admin from env vars is just the very first
+account; see `backend/README.md`.
 
 ## Structure & conventions
 
@@ -163,16 +185,22 @@ CRUD list UI again.
   Choosing a drink is a **guest** action, done from
   `PublicInvitationPage.jsx` (`/invitation/:id`) - a row of pill buttons,
   re-selectable at any time (unlike presence, there's no "locked" state).
+  A `"single"` invitee picks exactly one (clicking a pill instantly swaps
+  it, radio-style); a `"couple"` picks up to two (clicking toggles that
+  pill, the rest disable once both slots are filled) - `maxDrinks`/
+  `selectedDrinks`/`toggleDrink` in that file, enforced again server-side
+  in `InviteeService.setDrinks` so the limit isn't just a UI nicety.
   Guests have no admin session, so this page doesn't use
   `InviteesContext`/`DrinksContext` at all - it calls
-  `api/inviteesApi.js`'s `getPublicInvitee`/`choosePublicDrink` and
+  `api/inviteesApi.js`'s `getPublicInvitee`/`choosePublicDrinks` and
   `api/drinksApi.js`'s `listPublicDrinks` directly (the backend's
   `/api/public/**`, no-auth routes).
 - Both are stored as a **plain name string** directly on the invitee
-  (`guest.table`, `guest.drink`), not as an id reference to the
-  table/drink record, on the backend too (`Invitee.table`/`Invitee.drink`
-  columns). Simpler (no lookup/join needed to render "Table: Kenya" on the
-  invitee), at the cost that renaming a table/drink later won't
+  (`guest.table`, `guest.drink` + `guest.secondDrink` for a couple's
+  second choice), not as an id reference to the table/drink record, on
+  the backend too (`Invitee.table`/`Invitee.drink`/`Invitee.secondDrink`
+  columns). Simpler (no lookup/join needed to render "Table: Kenya" on
+  the invitee), at the cost that renaming a table/drink later won't
   retroactively update invitees already assigned to the old name -
   accepted tradeoff, see root `CLAUDE.md` if revisiting for referential
   integrity.

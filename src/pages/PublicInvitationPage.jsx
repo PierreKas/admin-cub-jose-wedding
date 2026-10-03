@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { toPng } from "html-to-image";
 import { Check, Download, GlassWater, Heart } from "lucide-react";
 import InvitationCard from "../components/InvitationCard";
-import { choosePublicDrink, getPublicInvitee } from "../api/inviteesApi";
+import { choosePublicDrinks, getPublicInvitee } from "../api/inviteesApi";
 import { listPublicDrinks } from "../api/drinksApi";
 import { wedding } from "../constants/wedding";
 
@@ -59,8 +59,25 @@ const PublicInvitationPage = () => {
     }
   };
 
-  const chooseDrink = async (name) => {
-    const updated = await choosePublicDrink(guest.id, name);
+  // A "single" invitee picks exactly one drink (clicking a pill instantly
+  // replaces the previous choice, like a radio button); a "couple" picks up
+  // to two (clicking toggles that pill on/off, other pills disable once
+  // both slots are filled) - see backend InviteeService.setDrinks.
+  const maxDrinks = guest?.type === "couple" ? 2 : 1;
+  const selectedDrinks = guest ? [guest.drink, guest.secondDrink].filter(Boolean) : [];
+
+  const toggleDrink = async (name) => {
+    let next;
+    if (selectedDrinks.includes(name)) {
+      next = selectedDrinks.filter((d) => d !== name);
+    } else if (maxDrinks === 1) {
+      next = [name];
+    } else if (selectedDrinks.length < maxDrinks) {
+      next = [...selectedDrinks, name];
+    } else {
+      return;
+    }
+    const updated = await choosePublicDrinks(guest.id, next);
     setGuest(updated);
     setJustSaved(true);
     setTimeout(() => setJustSaved(false), 2500);
@@ -103,19 +120,25 @@ const PublicInvitationPage = () => {
                 </h2>
               </div>
               <p className="text-xs text-secondary/60 mb-4">
-                Faites votre choix, il pourra être modifié à tout moment.
+                {maxDrinks === 2
+                  ? "En tant que couple, choisissez jusqu'à 2 boissons - modifiable à tout moment."
+                  : "Faites votre choix, il pourra être modifié à tout moment."}
               </p>
               <div className="flex flex-wrap gap-2.5">
                 {drinks.map((d) => {
-                  const selected = guest.drink === d.name;
+                  const selected = selectedDrinks.includes(d.name);
+                  const disabled = !selected && selectedDrinks.length >= maxDrinks;
                   return (
                     <button
                       key={d.id}
-                      onClick={() => chooseDrink(d.name)}
+                      onClick={() => toggleDrink(d.name)}
+                      disabled={disabled}
                       className={`inline-flex items-center gap-1.5 text-sm font-medium px-4 py-2 rounded-full border-2 transition-colors ${
                         selected
                           ? "bg-chocolate text-cream border-chocolate"
-                          : "border-beige-dark text-chocolate-dark hover:bg-beige"
+                          : disabled
+                            ? "border-beige-dark/40 text-chocolate-dark/30 cursor-not-allowed"
+                            : "border-beige-dark text-chocolate-dark hover:bg-beige"
                       }`}
                     >
                       {selected && <Check className="w-3.5 h-3.5" />}

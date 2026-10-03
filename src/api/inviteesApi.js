@@ -9,5 +9,6 @@ export const deleteInvitee = (id) => api.delete(`/api/invitees/${id}`);
 export const checkinInvitee = (id) => api.post(`/api/invitees/${id}/checkin`);
 
 export const getPublicInvitee = (id) => api.get(`/api/public/invitees/${id}`, { auth: false });
-export const choosePublicDrink = (id, drink) =>
-  api.patch(`/api/public/invitees/${id}/drink`, { drink }, { auth: false });
+/** drinks: string[] - at most 1 for a "single" invitee, at most 2 for a "couple" (validated server-side against that invitee's own type). */
+export const choosePublicDrinks = (id, drinks) =>
+  api.patch(`/api/public/invitees/${id}/drinks`, { drinks }, { auth: false });

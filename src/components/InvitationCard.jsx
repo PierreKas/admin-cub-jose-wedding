@@ -19,7 +19,7 @@ const InvitationCard = forwardRef(({ guest }, ref) => {
   return (
     <div
       ref={ref}
-      className="relative w-full min-h-[600px] bg-cream rounded-[6px] overflow-hidden shadow-2xl grid grid-cols-2 text-chocolate-dark"
+      className="relative w-full min-h-[600px] bg-cream rounded-[6px] overflow-hidden shadow-2xl grid grid-cols-1 sm:grid-cols-2 text-chocolate-dark"
     >
       {/* décor coins */}
       <div className="pointer-events-none absolute -top-16 -left-16 w-48 h-48 rounded-full border border-beige-dark/60" />
@@ -55,20 +55,20 @@ const InvitationCard = forwardRef(({ guest }, ref) => {
           <p className="text-[10px] sm:text-xs italic text-chocolate/60 mb-1">
             Qui s&apos;unissent l&apos;un à l&apos;autre
           </p>
-          <div className="flex items-baseline gap-2 whitespace-nowrap">
-            <p className="font-script text-2xl sm:text-3xl text-chocolate">
+          <div className="flex flex-wrap items-baseline justify-center gap-x-2 gap-y-1">
+            <p className="font-script text-xl sm:text-3xl text-chocolate">
               {wedding.groom}
             </p>
             <span className="text-chocolate/40">&amp;</span>
-            <p className="font-script text-2xl sm:text-3xl text-chocolate">
+            <p className="font-script text-xl sm:text-3xl text-chocolate">
               {wedding.bride}
             </p>
           </div>
         </div>
       </div>
 
-      {/* séparateur */}
-      <div className="absolute left-1/2 top-6 bottom-6 w-px bg-cream/20" />
+      {/* séparateur - n'a de sens qu'en 2 colonnes cote a cote (sm: et plus) */}
+      <div className="hidden sm:block absolute left-1/2 top-6 bottom-6 w-px bg-cream/20" />
 
       {/* panneau droit */}
       <div className="relative flex flex-col p-6 sm:p-10 bg-chocolate-dark text-cream">

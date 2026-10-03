@@ -5,7 +5,8 @@ import { useInvitees } from "../hooks/useInvitees";
 
 const DrinksPage = () => {
   const { invitees } = useInvitees();
-  const countFor = (name) => invitees.filter((g) => g.drink === name).length;
+  const countFor = (name) =>
+    invitees.filter((g) => g.drink === name || g.secondDrink === name).length;
 
   return (
     <ManagedListPage

@@ -12,9 +12,29 @@ import {
 import PageHeader from "../components/PageHeader";
 import { TypeTag } from "../components/Badges";
 import { useInvitees } from "../hooks/useInvitees";
+import { useAuth } from "../hooks/useAuth";
 import { encodeGuestPayload } from "../constants/qrPayload";
 
 const READER_ID = "qr-reader-viewport";
+
+const drinksLabel = (guest) => {
+  const drinks = [guest.drink, guest.secondDrink].filter(Boolean);
+  return drinks.length ? drinks.join(", ") : "Pas encore choisie";
+};
+
+/** Table + boisson(s) de l'invité scanné - tout ce qu'un agent protocole a besoin de savoir pour l'installer. */
+const GuestDetails = ({ guest }) => (
+  <div className="w-full bg-beige/50 rounded-xl p-4 text-left text-sm space-y-2 mb-6">
+    <div className="flex items-center justify-between gap-3">
+      <span className="text-secondary/50">Table</span>
+      <span className="font-semibold text-secondary text-right">{guest.table || "Non assignée"}</span>
+    </div>
+    <div className="flex items-center justify-between gap-3">
+      <span className="text-secondary/50">Boisson(s)</span>
+      <span className="font-semibold text-secondary text-right">{drinksLabel(guest)}</span>
+    </div>
+  </div>
+);
 
 /** Panneau affiché après un scan : confirmation, déjà présent, ou invalide. */
 const ScanResultPanel = ({ result, onConfirm, onClose }) => {
@@ -59,7 +79,7 @@ const ScanResultPanel = ({ result, onConfirm, onClose }) => {
             Déjà enregistré
           </h3>
           <p className="text-secondary font-semibold">{guest.name}</p>
-          <p className="text-secondary/60 text-sm mt-1 mb-6">
+          <p className="text-secondary/60 text-sm mt-1 mb-4">
             Cette personne est déjà entrée
             {guest.checkedInAt &&
               ` (${new Date(guest.checkedInAt).toLocaleTimeString("fr-FR", {
@@ -68,6 +88,7 @@ const ScanResultPanel = ({ result, onConfirm, onClose }) => {
               })})`}
             .
           </p>
+          <GuestDetails guest={guest} />
           <button
             onClick={onClose}
             className="w-full bg-secondary text-cream font-semibold py-2.5 rounded-full hover:bg-chocolate transition-colors"
@@ -90,9 +111,10 @@ const ScanResultPanel = ({ result, onConfirm, onClose }) => {
             Présence enregistrée
           </h3>
           <p className="text-secondary font-semibold">{guest.name}</p>
-          <p className="text-secondary/60 text-sm mt-1 mb-6">
+          <p className="text-secondary/60 text-sm mt-1 mb-4">
             Bienvenue à la cérémonie !
           </p>
+          <GuestDetails guest={guest} />
           <button
             onClick={onClose}
             className="w-full bg-secondary text-cream font-semibold py-2.5 rounded-full hover:bg-chocolate transition-colors"
@@ -118,9 +140,10 @@ const ScanResultPanel = ({ result, onConfirm, onClose }) => {
         <div className="flex justify-center mb-4">
           <TypeTag type={guest.type} />
         </div>
-        <p className="text-secondary/70 text-sm mb-6">
+        <p className="text-secondary/70 text-sm mb-4">
           Marquer la présence de cet invité ?
         </p>
+        <GuestDetails guest={guest} />
         <div className="grid grid-cols-2 gap-3">
           <button
             onClick={onClose}
@@ -142,6 +165,12 @@ const ScanResultPanel = ({ result, onConfirm, onClose }) => {
 
 const ScannerPage = () => {
   const { invitees, resolveScannedCode, markPresent } = useInvitees();
+  const { role } = useAuth();
+  // The full roster (used only by the no-camera test panel below) is
+  // admin-only - a Protocol account's InviteesProvider never fetches it
+  // (see context/InviteesContext.jsx), so this panel would just render
+  // empty for them; hide it outright instead of showing a confusing blank list.
+  const canSeeRoster = role === "ADMIN";
   const [cameraState, setCameraState] = useState("idle"); // idle | starting | running | error
   const [result, setResult] = useState(null);
   const scannerRef = useRef(null);
@@ -224,7 +253,7 @@ const ScannerPage = () => {
         subtitle="Scannez le QR code de l'invitation pour enregistrer l'arrivée de l'invité."
       />
 
-      <div className="grid lg:grid-cols-[1fr_360px] gap-8 items-start">
+      <div className={`grid gap-8 items-start ${canSeeRoster ? "lg:grid-cols-[1fr_360px]" : ""}`}>
         <div className="bg-chocolate-dark rounded-2xl overflow-hidden shadow-sm">
           <div className="relative aspect-square sm:aspect-video">
             <div id={READER_ID} className="w-full h-full [&_video]:object-cover [&_video]:w-full [&_video]:h-full" />
@@ -258,40 +287,42 @@ const ScannerPage = () => {
           </div>
         </div>
 
-        <div className="bg-cream rounded-2xl shadow-sm border border-beige-dark/60 p-6">
-          <div className="flex items-center gap-2 mb-3">
-            <QrCode className="w-4 h-4 text-chocolate" />
-            <h2 className="font-display text-base font-bold text-secondary">
-              Test du scanner
-            </h2>
-          </div>
-          <p className="text-xs text-secondary/60 mb-4">
-            Sans caméra sous la main ? Simulez le scan d'un invité pour tester
-            le flux de présence.
-          </p>
-          <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
-            {invitees.map((g) => (
-              <button
-                key={g.id}
-                onClick={() => simulateScan(g)}
-                className="w-full flex items-center justify-between gap-2 rounded-xl border border-beige-dark px-3.5 py-2.5 text-left hover:bg-beige transition-colors"
-              >
-                <span className="text-sm font-medium text-secondary truncate">
-                  {g.name}
-                </span>
-                <span
-                  className={`text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${
-                    g.status === "present"
-                      ? "bg-emerald-100 text-emerald-700"
-                      : "bg-amber-100 text-amber-700"
-                  }`}
+        {canSeeRoster && (
+          <div className="bg-cream rounded-2xl shadow-sm border border-beige-dark/60 p-6">
+            <div className="flex items-center gap-2 mb-3">
+              <QrCode className="w-4 h-4 text-chocolate" />
+              <h2 className="font-display text-base font-bold text-secondary">
+                Test du scanner
+              </h2>
+            </div>
+            <p className="text-xs text-secondary/60 mb-4">
+              Sans caméra sous la main ? Simulez le scan d'un invité pour tester
+              le flux de présence.
+            </p>
+            <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
+              {invitees.map((g) => (
+                <button
+                  key={g.id}
+                  onClick={() => simulateScan(g)}
+                  className="w-full flex items-center justify-between gap-2 rounded-xl border border-beige-dark px-3.5 py-2.5 text-left hover:bg-beige transition-colors"
                 >
-                  {g.status === "present" ? "Présent" : "En attente"}
-                </span>
-              </button>
-            ))}
+                  <span className="text-sm font-medium text-secondary truncate">
+                    {g.name}
+                  </span>
+                  <span
+                    className={`text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${
+                      g.status === "present"
+                        ? "bg-emerald-100 text-emerald-700"
+                        : "bg-amber-100 text-amber-700"
+                    }`}
+                  >
+                    {g.status === "present" ? "Présent" : "En attente"}
+                  </span>
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       <ScanResultPanel

@@ -109,9 +109,11 @@ const InviteeDetailPage = () => {
               </span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-secondary/50">Boisson choisie</span>
+              <span className="text-secondary/50">
+                Boisson{guest.type === "couple" ? "(s) choisie(s)" : " choisie"}
+              </span>
               <span className="font-semibold text-secondary">
-                {guest.drink || "Pas encore choisie"}
+                {[guest.drink, guest.secondDrink].filter(Boolean).join(", ") || "Pas encore choisie"}
               </span>
             </div>
           </div>
