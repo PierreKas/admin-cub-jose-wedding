@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import {
+  GlassWater,
   Heart,
   LayoutDashboard,
   LogOut,
   Menu,
   QrCode,
+  Table2,
   Users,
   X,
 } from "lucide-react";
@@ -15,6 +17,8 @@ import { wedding } from "../constants/wedding";
 const navItems = [
   { to: "/admin", label: "Tableau de bord", icon: LayoutDashboard, end: true },
   { to: "/admin/invites", label: "Invités", icon: Users },
+  { to: "/admin/tables", label: "Tables", icon: Table2 },
+  { to: "/admin/boissons", label: "Boissons", icon: GlassWater },
   { to: "/admin/scanner", label: "Scanner QR", icon: QrCode },
 ];
 

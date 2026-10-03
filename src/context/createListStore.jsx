@@ -1,0 +1,75 @@
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
+import { useAuth } from "../hooks/useAuth";
+
+/**
+ * Fabrique un petit store CRUD (liste d'objets { id, name, ... }) adosse a
+ * l'API reelle - utilisee par les boissons et les tables, qui partagent
+ * exactement la meme forme (nom + CRUD, voir api/namedListApi.js cote
+ * backend comme cote frontend). Renvoie un Provider et un hook useStore
+ * distincts, chacun re-exporte depuis son propre fichier pour ne pas
+ * melanger composant/hook dans un seul module (react-refresh).
+ */
+export function createListStore(api) {
+  const Ctx = createContext(null);
+
+  function Provider({ children }) {
+    const { isAuthenticated } = useAuth();
+    const [items, setItems] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    const refresh = useCallback(async () => {
+      if (!isAuthenticated) {
+        setItems([]);
+        setLoading(false);
+        return;
+      }
+      setLoading(true);
+      try {
+        setItems(await api.list());
+      } finally {
+        setLoading(false);
+      }
+    }, [isAuthenticated]);
+
+    useEffect(() => {
+      refresh();
+    }, [refresh]);
+
+    const add = useCallback(async (name) => {
+      const item = await api.create(name);
+      setItems((list) => [...list, item]);
+      return item;
+    }, []);
+
+    const update = useCallback(async (id, patch) => {
+      const item = await api.rename(id, patch.name);
+      setItems((list) => list.map((it) => (it.id === id ? item : it)));
+      return item;
+    }, []);
+
+    const remove = useCallback(async (id) => {
+      await api.remove(id);
+      setItems((list) => list.filter((it) => it.id !== id));
+    }, []);
+
+    const value = { items, loading, add, update, remove };
+
+    return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
+  }
+
+  function useStore() {
+    const ctx = useContext(Ctx);
+    if (!ctx) {
+      throw new Error("Store used outside of its Provider");
+    }
+    return ctx;
+  }
+
+  return { Provider, useStore };
+}

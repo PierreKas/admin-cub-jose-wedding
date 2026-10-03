@@ -1,74 +1,53 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { InviteesContext } from "./inviteesContextObject";
 import { decodeGuestPayload } from "../constants/qrPayload";
-
-const STORAGE_KEY = "cj-wedding.invitees.v1";
-
-const seed = () => {
-  const now = Date.now();
-  const mk = (name, type, status, minutesAgo) => ({
-    id: crypto.randomUUID(),
-    civility: "",
-    name,
-    type,
-    status,
-    checkedInAt:
-      status === "present"
-        ? new Date(now - minutesAgo * 60000).toISOString()
-        : null,
-    createdAt: new Date(now - (minutesAgo + 60) * 60000).toISOString(),
-  });
-  return [
-    mk("Alice Kasanani", "couple", "present", 42),
-    mk("Aline Kasanani", "single", "present", 15),
-    mk("Simeon Kasanani", "couple", "attente", 0),
-    mk("Moise Biringiro", "single", "attente", 0),
-  ];
-};
-
-const load = () => {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return seed();
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) && parsed.length ? parsed : seed();
-  } catch {
-    return seed();
-  }
-};
+import { useAuth } from "../hooks/useAuth";
+import {
+  checkinInvitee,
+  createInvitee,
+  deleteInvitee as apiDeleteInvitee,
+  getInvitee as apiGetInvitee,
+  listInvitees,
+  updateInvitee as apiUpdateInvitee,
+} from "../api/inviteesApi";
 
 export const InviteesProvider = ({ children }) => {
-  const [invitees, setInvitees] = useState(load);
+  const { isAuthenticated } = useAuth();
+  const [invitees, setInvitees] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const refresh = useCallback(async () => {
+    if (!isAuthenticated) {
+      setInvitees([]);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    try {
+      setInvitees(await listInvitees());
+    } finally {
+      setLoading(false);
+    }
+  }, [isAuthenticated]);
 
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(invitees));
-    } catch {
-      // stockage indisponible (navigation privee, quota) - on ignore pour la simulation
-    }
-  }, [invitees]);
+    refresh();
+  }, [refresh]);
 
-  const addInvitee = useCallback(({ civility = "", name, type }) => {
-    const guest = {
-      id: crypto.randomUUID(),
-      civility,
-      name: name.trim(),
-      type,
-      status: "attente",
-      checkedInAt: null,
-      createdAt: new Date().toISOString(),
-    };
+  const addInvitee = useCallback(async ({ civility = "", name, type, table = "" }) => {
+    const guest = await createInvitee({ civility, name: name.trim(), type, table });
     setInvitees((list) => [guest, ...list]);
     return guest;
   }, []);
 
-  const updateInvitee = useCallback((id, patch) => {
-    setInvitees((list) =>
-      list.map((g) => (g.id === id ? { ...g, ...patch } : g)),
-    );
+  const updateInvitee = useCallback(async (id, patch) => {
+    const updated = await apiUpdateInvitee(id, patch);
+    setInvitees((list) => list.map((g) => (g.id === id ? updated : g)));
+    return updated;
   }, []);
 
-  const deleteInvitee = useCallback((id) => {
+  const deleteInvitee = useCallback(async (id) => {
+    await apiDeleteInvitee(id);
     setInvitees((list) => list.filter((g) => g.id !== id));
   }, []);
 
@@ -78,36 +57,27 @@ export const InviteesProvider = ({ children }) => {
   );
 
   /** Marque un invite present. Renvoie un statut pour piloter l'UI du scanner. */
-  const markPresent = useCallback(
-    (id) => {
-      const guest = invitees.find((g) => g.id === id);
-      if (!guest) return { outcome: "introuvable" };
-      if (guest.status === "present") return { outcome: "deja_present", guest };
-      const checkedInAt = new Date().toISOString();
-      setInvitees((list) =>
-        list.map((g) =>
-          g.id === id ? { ...g, status: "present", checkedInAt } : g,
-        ),
-      );
-      return { outcome: "ok", guest: { ...guest, status: "present", checkedInAt } };
-    },
-    [invitees],
-  );
+  const markPresent = useCallback(async (id) => {
+    const { outcome, invitee } = await checkinInvitee(id);
+    setInvitees((list) => list.map((g) => (g.id === id ? invitee : g)));
+    return { outcome: outcome === "ok" ? "ok" : "deja_present", guest: invitee };
+  }, []);
 
-  /** Decode un QR scanne et resout l'invite correspondant dans le stockage local. */
-  const resolveScannedCode = useCallback(
-    (raw) => {
-      const data = decodeGuestPayload(raw);
-      if (!data) return { outcome: "invalide" };
-      const guest = invitees.find((g) => g.id === data.id);
-      if (!guest) return { outcome: "introuvable" };
+  /** Decode un QR scanne et resout l'invite correspondant cote serveur (atomique, ScannerPage.jsx). */
+  const resolveScannedCode = useCallback(async (raw) => {
+    const data = decodeGuestPayload(raw);
+    if (!data) return { outcome: "invalide" };
+    try {
+      const guest = await apiGetInvitee(data.id);
       return { outcome: "trouve", guest };
-    },
-    [invitees],
-  );
+    } catch {
+      return { outcome: "introuvable" };
+    }
+  }, []);
 
   const value = {
     invitees,
+    loading,
     addInvitee,
     updateInvitee,
     deleteInvitee,

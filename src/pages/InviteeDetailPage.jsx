@@ -14,13 +14,15 @@ import { useInvitees } from "../hooks/useInvitees";
 
 const InviteeDetailPage = () => {
   const { id } = useParams();
-  const { getInvitee, deleteInvitee } = useInvitees();
+  const { getInvitee, deleteInvitee, loading } = useInvitees();
   const guest = getInvitee(id);
   const navigate = useNavigate();
   const cardRef = useRef(null);
   const [downloading, setDownloading] = useState(false);
   const [copied, setCopied] = useState(false);
 
+  // Le contexte peut encore charger la liste (arrivee directe sur cette URL) - attendre avant de decider que l'invite n'existe pas.
+  if (loading) return <p className="text-secondary/50 text-sm">Chargement...</p>;
   if (!guest) return <Navigate to="/admin/invites" replace />;
 
   const onDownload = async () => {
@@ -51,9 +53,9 @@ const InviteeDetailPage = () => {
     }
   };
 
-  const onDelete = () => {
+  const onDelete = async () => {
     if (window.confirm(`Supprimer l'invité "${guest.name}" ?`)) {
-      deleteInvitee(guest.id);
+      await deleteInvitee(guest.id);
       navigate("/admin/invites");
     }
   };
@@ -95,6 +97,23 @@ const InviteeDetailPage = () => {
                 {new Date(guest.checkedInAt).toLocaleString("fr-FR")}
               </p>
             )}
+          </div>
+
+          <div className="h-px bg-beige-dark/60" />
+
+          <div className="space-y-2 text-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-secondary/50">Table assignée</span>
+              <span className="font-semibold text-secondary">
+                {guest.table || "Non assignée"}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-secondary/50">Boisson choisie</span>
+              <span className="font-semibold text-secondary">
+                {guest.drink || "Pas encore choisie"}
+              </span>
+            </div>
           </div>
 
           <div className="h-px bg-beige-dark/60" />

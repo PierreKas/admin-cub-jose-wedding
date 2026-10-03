@@ -11,17 +11,23 @@ const LoginPage = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   if (isAuthenticated) {
     return <Navigate to={location.state?.from || "/admin"} replace />;
   }
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
-    if (login(username, password)) {
+    setError("");
+    setSubmitting(true);
+    try {
+      await login(username, password);
       navigate(location.state?.from || "/admin", { replace: true });
-    } else {
-      setError("Identifiants incorrects. Réessayez.");
+    } catch (err) {
+      setError(err.message || "Identifiants incorrects. Réessayez.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -81,9 +87,10 @@ const LoginPage = () => {
 
           <button
             type="submit"
-            className="w-full bg-chocolate text-cream font-semibold py-2.5 rounded-lg hover:bg-chocolate-dark transition-colors duration-200"
+            disabled={submitting}
+            className="w-full bg-chocolate text-cream font-semibold py-2.5 rounded-lg hover:bg-chocolate-dark transition-colors duration-200 disabled:opacity-60"
           >
-            Se connecter
+            {submitting ? "Connexion..." : "Se connecter"}
           </button>
 
           <p className="text-center text-[11px] text-chocolate/40 pt-1">

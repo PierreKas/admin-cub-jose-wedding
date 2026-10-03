@@ -1,37 +1,63 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useParams, Navigate } from "react-router-dom";
-import { ArrowLeft, User, Users } from "lucide-react";
+import { Armchair, ArrowLeft, User, Users } from "lucide-react";
 import PageHeader from "../components/PageHeader";
 import { useInvitees } from "../hooks/useInvitees";
+import { useTables } from "../hooks/useTables";
 
 const CIVILITIES = ["", "Mme", "Mr", "Rév", "Hon"];
 
 const InviteeFormPage = () => {
   const { id } = useParams();
   const isEdit = Boolean(id);
-  const { getInvitee, addInvitee, updateInvitee } = useInvitees();
+  const { getInvitee, addInvitee, updateInvitee, loading } = useInvitees();
+  const { items: tables } = useTables();
   const existing = isEdit ? getInvitee(id) : null;
   const navigate = useNavigate();
 
   const [civility, setCivility] = useState(existing?.civility ?? "");
   const [name, setName] = useState(existing?.name ?? "");
   const [type, setType] = useState(existing?.type ?? "single");
+  const [table, setTable] = useState(existing?.table ?? "");
   const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
+  // Au premier rendu (arrivee directe sur l'URL de modification), le
+  // contexte n'a pas encore fini de charger la liste et `existing` est donc
+  // encore undefined - les champs ci-dessus ont ete initialises vides. Une
+  // fois le chargement termine, on les resynchronise sur l'invite reel.
+  useEffect(() => {
+    if (!existing) return;
+    setCivility(existing.civility ?? "");
+    setName(existing.name ?? "");
+    setType(existing.type ?? "single");
+    setTable(existing.table ?? "");
+  }, [existing]);
+
+  if (isEdit && loading) {
+    return <p className="text-secondary/50 text-sm">Chargement...</p>;
+  }
   if (isEdit && !existing) return <Navigate to="/admin/invites" replace />;
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
     if (!name.trim()) {
       setError("Le nom de l'invité est obligatoire.");
       return;
     }
-    if (isEdit) {
-      updateInvitee(existing.id, { civility, name: name.trim(), type });
-      navigate(`/admin/invites/${existing.id}`);
-    } else {
-      const guest = addInvitee({ civility, name, type });
-      navigate(`/admin/invites/${guest.id}`);
+    setError("");
+    setSubmitting(true);
+    try {
+      if (isEdit) {
+        await updateInvitee(existing.id, { civility, name: name.trim(), type, table });
+        navigate(`/admin/invites/${existing.id}`);
+      } else {
+        const guest = await addInvitee({ civility, name, type, table });
+        navigate(`/admin/invites/${guest.id}`);
+      }
+    } catch (err) {
+      setError(err.message);
+      setSubmitting(false);
     }
   };
 
@@ -120,11 +146,35 @@ const InviteeFormPage = () => {
           </div>
         </div>
 
+        <div>
+          <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-secondary/60 mb-2">
+            <Armchair className="w-3.5 h-3.5" />
+            Table (optionnel)
+          </label>
+          <select
+            value={table}
+            onChange={(e) => setTable(e.target.value)}
+            className="w-full rounded-lg border border-beige-dark bg-beige/40 px-4 py-2.5 text-sm text-secondary outline-none focus:border-chocolate"
+          >
+            <option value="">Aucune table assignée</option>
+            {tables.map((t) => (
+              <option key={t.id} value={t.name}>
+                {t.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
         <button
           type="submit"
-          className="w-full bg-chocolate text-cream font-semibold py-3 rounded-full hover:bg-chocolate-dark transition-colors duration-200"
+          disabled={submitting}
+          className="w-full bg-chocolate text-cream font-semibold py-3 rounded-full hover:bg-chocolate-dark transition-colors duration-200 disabled:opacity-60"
         >
-          {isEdit ? "Enregistrer les modifications" : "Générer l'invitation"}
+          {submitting
+            ? "Enregistrement..."
+            : isEdit
+              ? "Enregistrer les modifications"
+              : "Générer l'invitation"}
         </button>
       </form>
     </div>

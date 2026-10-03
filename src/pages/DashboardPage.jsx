@@ -19,7 +19,7 @@ const StatCard = ({ icon: Icon, label, value, tint }) => (
 );
 
 const DashboardPage = () => {
-  const { invitees } = useInvitees();
+  const { invitees, loading } = useInvitees();
 
   const total = invitees.length;
   const presents = invitees.filter((g) => g.status === "present").length;
@@ -48,6 +48,10 @@ const DashboardPage = () => {
           </Link>
         }
       />
+
+      {loading && (
+        <p className="text-secondary/50 text-sm mb-6">Chargement...</p>
+      )}
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
         <StatCard

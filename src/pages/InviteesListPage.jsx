@@ -24,10 +24,10 @@ const InviteeCard = ({ guest }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
 
-  const onDelete = () => {
+  const onDelete = async () => {
     setMenuOpen(false);
     if (window.confirm(`Supprimer l'invité "${guest.name}" ?`)) {
-      deleteInvitee(guest.id);
+      await deleteInvitee(guest.id);
     }
   };
 
@@ -108,7 +108,7 @@ const InviteeCard = ({ guest }) => {
 };
 
 const InviteesListPage = () => {
-  const { invitees } = useInvitees();
+  const { invitees, loading } = useInvitees();
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState("tous");
 
@@ -173,7 +173,9 @@ const InviteesListPage = () => {
         </span>
       </div>
 
-      {filtered.length > 0 ? (
+      {loading ? (
+        <p className="text-secondary/50 text-sm">Chargement...</p>
+      ) : filtered.length > 0 ? (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {filtered.map((g) => (
             <InviteeCard key={g.id} guest={g} />

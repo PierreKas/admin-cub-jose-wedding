@@ -5,12 +5,13 @@ Guidance for Claude Code when working in this repo.
 ## What this is
 
 Invitation management app for the wedding of **Christian & Joséphine**
-("cub-jose-wedding"). This is currently a **frontend-only simulation** - all
-data lives in the browser (localStorage), there is no backend yet (see
-`../backend/`, empty as of this writing). The admin creates invitees, the
-system generates a QR code per invitee and bakes it into a wedding-styled
-invitation image, and an admin-side scanner marks guests present at the
-door.
+("cub-jose-wedding"). It talks to a real backend now (`../backend/`, a
+single Spring Boot service - see its README) via `src/api/*.js`; nothing
+is read from or written to `localStorage` anymore (auth's bearer token is
+the one exception kept in `sessionStorage`, same session-scoped lifetime
+as before). The admin creates invitees, the system generates a QR code
+per invitee and bakes it into a wedding-styled invitation image, and an
+admin-side scanner marks guests present at the door.
 
 Two references drove the design (`../images/`):
 - `admin-should-look-like-this.png` - a dashboard ("Inuwa-Admin") whose
@@ -44,9 +45,9 @@ npm run preview  # serve dist/
 ## The invitee flow (what actually happens)
 
 1. Admin fills `InviteeFormPage` (civilité, nom, type `single`/`couple`).
-2. `useInvitees().addInvitee()` creates the record in the local store
-   (`context/InviteesContext.jsx`, persisted to `localStorage` under
-   `cj-wedding.invitees.v1`) and navigates to `InviteeDetailPage`.
+2. `useInvitees().addInvitee()` calls `POST /api/invitees`
+   (`context/InviteesContext.jsx` -> `api/inviteesApi.js`), stores the
+   created record in React state, and navigates to `InviteeDetailPage`.
 3. `InvitationCard.jsx` renders the invitation for that guest; inside it,
    `encodeGuestPayload(guest)` (`constants/qrPayload.js`) Base64-encodes
    `{ code: WEDDING_CODE, id, n: name, t: type }` and `useQrDataUrl` turns
@@ -63,23 +64,26 @@ npm run preview  # serve dist/
    decoded string goes through `resolveScannedCode()` ->
    `decodeGuestPayload()`, which checks the `WEDDING_CODE` matches before
    trusting the payload at all (so a QR from a different event, or a random
-   QR, is rejected outright). If valid, it looks the `id` up in the local
-   store and shows one of four modals (`ScanResultPanel` in `ScannerPage.jsx`):
-   confirm ("Marquer la présence de cet invité ?"), déjà présent, invalide,
-   or confirmed. Confirming calls `markPresent(id)`, which flips
-   `status: "attente" -> "present"` - from then on that same QR always
-   resolves to "déjà présent", it can't be re-used to check in twice.
+   QR, is rejected outright). If valid, it calls `GET
+   /api/invitees/{id}` and shows one of four modals (`ScanResultPanel` in
+   `ScannerPage.jsx`): confirm ("Marquer la présence de cet invité ?"),
+   déjà présent, invalide, or confirmed. Confirming calls `markPresent(id)`
+   -> `POST /api/invitees/{id}/checkin`, a single conditional `UPDATE ...
+   WHERE status = 'attente'` on the backend
+   (`InviteeRepository.markPresentIfPending`) - that's what actually makes
+   "the same QR can't check in twice" atomic/server-authoritative now,
+   instead of a racy client-side localStorage check.
    There's also a no-camera "Test du scanner" panel that simulates a scan
-   for any seeded invitee, useful for demos and devices without a working
+   for any loaded invitee, useful for demos and devices without a working
    camera.
 
-**Important for the backend integration later**: `decodeGuestPayload`'s
-Base64 encoding is an *obfuscation*, not real security - it stops a generic
-camera app from reading the guest's name off the QR, but anyone who reads
-the frontend source can decode it too. The real authority (does this
-invitee exist, is it already checked in) must move server-side; treat
-everything in `InviteesContext.jsx` as what the backend API needs to
-reproduce.
+**Known remaining gap** (unchanged on purpose - see root `CLAUDE.md`'s "QR
+code" section): `decodeGuestPayload`'s Base64 encoding is still an
+*obfuscation* done entirely client-side, not real security - anyone who
+reads the frontend source can decode a QR's `id`/`name`/`type` themselves.
+The check-in decision itself is now fully server-authoritative (see
+above); only the payload encoding/decoding step was left as-is when the
+backend was built, to keep that a pure data-layer swap.
 
 ## Branding
 
@@ -101,12 +105,16 @@ reproduce.
 
 ## Auth
 
-`context/AuthContext.jsx` is a **mock**, client-side-only login
-(hardcoded `admin` / `mariage2026` in that file, session flag in
-`sessionStorage`) gating everything under `/admin` via
-`components/RequireAuth.jsx`. This exists purely so the admin flow feels
-complete in the simulation - it is not real security and must be replaced
-by actual backend authentication.
+`context/AuthContext.jsx` calls `POST /api/auth/login` (`api/authApi.js`)
+and holds the returned JWT via `api/apiClient.js`'s `setAuthToken` -
+persisted in `sessionStorage` (`cj-wedding.admin-token.v1`, read
+synchronously at module load so it's available before any Provider's
+mount effect fires) gating everything under `/admin` via
+`components/RequireAuth.jsx`. A 401 from any API call (expired/invalid
+token) triggers `apiClient`'s `unauthorizedHandler`, which logs the admin
+out everywhere, not just on the request that happened to fail. The admin
+account itself is backend-side config (env vars, no accounts table) -
+see `backend/README.md`.
 
 ## Structure & conventions
 
@@ -124,6 +132,55 @@ by actual backend authentication.
   `TypeTag`) used across the dashboard, list, detail and scanner pages -
   add new shared badges there rather than duplicating markup.
 
+## Tables & Drinks (seating + reception choices)
+
+Two admin-managed named lists, both built on the same generic factory
+(`context/createListStore.jsx`'s `createListStore(api)`, taking an
+`api/namedListApi.js`-shaped `{ list, create, rename, remove }` and
+returning `{ Provider, useStore }`) rather than duplicating CRUD logic -
+mirrored on the backend by its own generic `AbstractNamedItemService` /
+`AbstractNamedItemController`, same reasoning on both sides.
+`context/{drinksStore.js, tablesStore.js}` instantiate it with
+`api/{drinksApi.js, tablesApi.js}`, `context/{DrinksContext.jsx,
+TablesContext.jsx}` re-export just the `Provider`,
+`hooks/{useDrinks.js, useTables.js}` re-export just the hook - same
+one-export-per-file split as Auth/Invitees, for the same fast-refresh
+reason. `createListStore.jsx` must stay a `.jsx` file (it renders
+`<Ctx.Provider>`) - Vite/esbuild won't parse JSX in a plain `.js` file
+and the build fails outright if it's renamed back.
+
+Both `DrinksPage.jsx` and `TablesPage.jsx` are thin wrappers around the
+shared `components/ManagedListPage.jsx` (add/rename/delete UI) - add new
+simple named-list admin pages the same way rather than hand-rolling the
+CRUD list UI again.
+
+- **Tables**: seeded by the backend (`SeedDataRunner`) with 10 country
+  names (deliberately no "Rwanda" - the client asked for that
+  specifically, keep respecting it if reseeding). Assigning an invitee to
+  a table is an **admin** action, done from `InviteeFormPage.jsx` (a
+  `<select>` sourced from `useTables().items`).
+- **Drinks**: seeded by the backend with common reception drinks.
+  Choosing a drink is a **guest** action, done from
+  `PublicInvitationPage.jsx` (`/invitation/:id`) - a row of pill buttons,
+  re-selectable at any time (unlike presence, there's no "locked" state).
+  Guests have no admin session, so this page doesn't use
+  `InviteesContext`/`DrinksContext` at all - it calls
+  `api/inviteesApi.js`'s `getPublicInvitee`/`choosePublicDrink` and
+  `api/drinksApi.js`'s `listPublicDrinks` directly (the backend's
+  `/api/public/**`, no-auth routes).
+- Both are stored as a **plain name string** directly on the invitee
+  (`guest.table`, `guest.drink`), not as an id reference to the
+  table/drink record, on the backend too (`Invitee.table`/`Invitee.drink`
+  columns). Simpler (no lookup/join needed to render "Table: Kenya" on the
+  invitee), at the cost that renaming a table/drink later won't
+  retroactively update invitees already assigned to the old name -
+  accepted tradeoff, see root `CLAUDE.md` if revisiting for referential
+  integrity.
+- `InviteeDetailPage.jsx` shows both read-only, `DrinksPage.jsx` /
+  `TablesPage.jsx` show a live count of invitees currently on each
+  drink/table (filtered from `useInvitees().invitees`, not stored
+  redundantly).
+
 ## Lint
 
 `npm run lint` reports **1 pre-existing error** - `'Icon' is defined but
@@ -137,6 +194,8 @@ restructuring. New real lint errors should be fixed.
 
 ## Deploying
 
-Not wired to Vercel yet (no `vercel.json`) since this is still the frontend
-simulation phase - add one (static build, SPA rewrite) once the backend
-exists and this is ready to ship.
+Deployed to Vercel (`vercel.json`, static build + SPA rewrite) - no Docker
+here, that's the backend's job. Set `VITE_API_BASE_URL` as a Vercel
+project environment variable (see `.env.example`) pointing at wherever
+`backend/` is actually running; it must be HTTPS or the browser blocks it
+as mixed content from this HTTPS-served frontend.

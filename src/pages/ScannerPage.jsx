@@ -147,11 +147,20 @@ const ScannerPage = () => {
   const scannerRef = useRef(null);
   const resultRef = useRef(null);
   resultRef.current = result;
+  const resolvingRef = useRef(false);
 
-  const handleDecoded = (decodedText) => {
-    if (resultRef.current) return; // un panneau est déjà ouvert
-    const resolved = resolveScannedCode(decodedText);
-    setResult(resolved);
+  const handleDecoded = async (decodedText) => {
+    // un panneau est deja ouvert, ou une resolution reseau est deja en vol
+    // pour ce scan (le flux camera appelle ce callback a chaque frame, bien
+    // plus vite que l'aller-retour API)
+    if (resultRef.current || resolvingRef.current) return;
+    resolvingRef.current = true;
+    try {
+      const resolved = await resolveScannedCode(decodedText);
+      setResult(resolved);
+    } finally {
+      resolvingRef.current = false;
+    }
   };
 
   useEffect(() => {
@@ -180,16 +189,26 @@ const ScannerPage = () => {
       cancelled = true;
       const el = scannerRef.current;
       if (el) {
-        el.stop()
-          .then(() => el.clear())
-          .catch(() => {});
+        // html5-qrcode's stop() throws *synchronously* (not a rejected
+        // promise) if called before start() has resolved into "scanning"
+        // state - which happens whenever this effect's cleanup runs fast
+        // (React StrictMode's dev double-invoke, or just navigating away
+        // before the camera finished initializing). Left unguarded, that
+        // crashes the whole page with no error boundary to catch it.
+        try {
+          el.stop()
+            .then(() => el.clear())
+            .catch(() => {});
+        } catch {
+          // le scanner n'avait pas fini de demarrer - rien a arreter
+        }
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const onConfirmPresence = (id) => {
-    const outcome = markPresent(id);
+  const onConfirmPresence = async (id) => {
+    const outcome = await markPresent(id);
     setResult({ outcome: "confirmed", guest: outcome.guest });
   };
 
