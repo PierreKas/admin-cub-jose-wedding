@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
-import { Eye, EyeOff, Heart, Lock, User } from "lucide-react";
+import { Eye, EyeOff, Lock, User } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
+import Monogram from "../components/Monogram";
 import { wedding } from "../constants/wedding";
 
 const LoginPage = () => {
@@ -36,9 +37,7 @@ const LoginPage = () => {
     <div className="min-h-screen flex items-center justify-center bg-secondary bg-linear-to-br from-secondary to-chocolate px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <span className="inline-flex w-14 h-14 rounded-full bg-accent items-center justify-center text-secondary mb-4">
-            <Heart className="w-6 h-6 fill-current" />
-          </span>
+          <Monogram size="w-16 h-16 mb-4" textSize="text-2xl" />
           <h1 className="font-display text-2xl font-bold text-cream">
             Mariage Admin
           </h1>

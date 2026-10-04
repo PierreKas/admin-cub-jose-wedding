@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import {
   GlassWater,
-  Heart,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -13,6 +12,7 @@ import {
   X,
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
+import Monogram from "./Monogram";
 import { wedding } from "../constants/wedding";
 
 // No `roles` = visible to every logged-in role (only the scanner qualifies - a Protocol account can't reach anything else, see RequireAuth in App.jsx).
@@ -35,9 +35,7 @@ const SidebarContent = ({ onNavigate }) => {
     <div className="h-full flex flex-col bg-secondary text-beige">
       <div className="px-6 py-7 border-b border-white/10">
         <Link to="/admin" className="flex items-center gap-3">
-          <span className="w-11 h-11 rounded-full bg-accent flex items-center justify-center text-secondary shrink-0">
-            <Heart className="w-5 h-5 fill-current" />
-          </span>
+          <Monogram size="w-11 h-11" textSize="text-sm" />
           <span>
             <span className="block font-display text-lg font-bold text-cream leading-tight">
               Mariage Admin

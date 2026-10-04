@@ -2,6 +2,7 @@ import React, { forwardRef } from "react";
 import { wedding, WEDDING_CODE } from "../constants/wedding";
 import { encodeGuestPayload } from "../constants/qrPayload";
 import { useQrDataUrl } from "../hooks/useQrDataUrl";
+import Monogram from "./Monogram";
 
 const typeLabel = (type) =>
   type === "couple" ? "Invitation Couple" : "Invitation Individuelle";
@@ -27,9 +28,12 @@ const InvitationCard = forwardRef(({ guest }, ref) => {
 
       {/* panneau gauche */}
       <div className="relative flex flex-col justify-between p-6 sm:p-10 bg-gradient-to-br from-beige to-cream">
-        <p className="font-script text-5xl sm:text-6xl leading-none text-chocolate">
-          Invitation
-        </p>
+        <div>
+          <Monogram size="w-14 h-14 sm:w-16 sm:h-16 mb-3" textSize="text-xl sm:text-2xl" />
+          <p className="font-script text-5xl sm:text-6xl leading-none text-chocolate">
+            Invitation
+          </p>
+        </div>
 
         <div className="space-y-4">
           {guest && (
@@ -76,6 +80,11 @@ const InvitationCard = forwardRef(({ guest }, ref) => {
           <p className="font-display font-bold text-sm sm:text-lg">
             {wedding.date}
           </p>
+          {wedding.location && (
+            <p className="text-[10px] sm:text-xs text-cream/60 mt-0.5">
+              {wedding.location}
+            </p>
+          )}
         </div>
 
         <div className="flex-1 space-y-3 sm:space-y-5">
@@ -94,9 +103,11 @@ const InvitationCard = forwardRef(({ guest }, ref) => {
           ))}
         </div>
 
-        <p className="text-[9px] sm:text-[11px] text-cream/50 leading-snug mt-3">
-          {wedding.note}
-        </p>
+        {wedding.note && (
+          <p className="text-[9px] sm:text-[11px] text-cream/50 leading-snug mt-3">
+            {wedding.note}
+          </p>
+        )}
 
         <div className="mt-4 sm:mt-6 flex items-end justify-between gap-3">
           <p className="text-[9px] sm:text-xs text-cream/70 leading-relaxed">

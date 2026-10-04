@@ -2,14 +2,14 @@
 @import "tailwindcss";
 
 @theme {
-  /* Chocolat & beige - palette du mariage */
+  /* Noir & or - palette du mariage, alignee sur images/save-the-date.jpeg */
   --color-chocolate: #4a2c1d;
-  --color-chocolate-dark: #2b1810;
+  --color-chocolate-dark: #1a1410;
   --color-chocolate-light: #7a4a2f;
-  --color-beige: #f6ecdd;
-  --color-beige-dark: #e3cba5;
-  --color-gold: #c9a227;
-  --color-cream: #fbf5eb;
+  --color-beige: #efdcb0;
+  --color-beige-dark: #d4b876;
+  --color-gold: #d4af37;
+  --color-cream: #fbf3df;
 
   --color-primary: var(--color-chocolate);
   --color-secondary: var(--color-chocolate-dark);

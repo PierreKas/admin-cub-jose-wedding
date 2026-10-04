@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { toPng } from "html-to-image";
-import { Check, Download, GlassWater, Heart } from "lucide-react";
+import { Check, Download, GlassWater } from "lucide-react";
 import InvitationCard from "../components/InvitationCard";
+import Monogram from "../components/Monogram";
 import { choosePublicDrinks, getPublicInvitee } from "../api/inviteesApi";
 import { listPublicDrinks } from "../api/drinksApi";
 import { wedding } from "../constants/wedding";
@@ -86,12 +87,11 @@ const PublicInvitationPage = () => {
   return (
     <div className="min-h-screen bg-secondary bg-linear-to-br from-secondary to-chocolate flex flex-col items-center justify-center px-4 py-12">
       <div className="text-center mb-6">
-        <span className="inline-flex w-12 h-12 rounded-full bg-accent items-center justify-center text-secondary mb-3">
-          <Heart className="w-5 h-5 fill-current" />
-        </span>
+        <Monogram size="w-14 h-14 mb-3" textSize="text-xl" />
         <h1 className="font-display text-xl font-bold text-cream">
           Mariage de {wedding.groom} &amp; {wedding.bride}
         </h1>
+        <p className="text-cream/50 text-xs mt-1">{wedding.location}</p>
       </div>
 
       {loading ? (

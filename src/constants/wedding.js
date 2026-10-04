@@ -8,8 +8,17 @@ export const wedding = {
   bride: "Joséphine",
   familyIntro:
     "La famille vous invite à rehausser de votre présence aux cérémonies de mariage de leurs enfants.",
-  date: "Samedi 12 Décembre 2026",
+  date: "Samedi 21 Novembre 2026",
+  location: "Kinshasa - RD Congo",
+  // Civil, religieux et réception se tiennent tous le même jour désormais -
+  // civil n'est plus une cérémonie à part sur une autre date (voir l'ancien
+  // champ `note` qui le précisait).
   program: [
+    {
+      title: "Mariage Civil",
+      place: "Hôtel de Ville de Kinshasa",
+      time: "09H00",
+    },
     {
       title: "Mariage Religieux",
       place: "Paroisse Sainte-Thérèse",
@@ -26,6 +35,6 @@ export const wedding = {
       time: "17H00",
     },
   ],
-  note: "Le mariage civil se tiendra en comité restreint le Jeudi 10 Décembre à 9H00.",
+  note: "",
   contacts: ["+243 900 000 001", "+243 900 000 002"],
 };
