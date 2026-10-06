@@ -7,7 +7,7 @@ export const wedding = {
   groom: "Christian",
   bride: "Joséphine",
   familyIntro:
-    "La famille vous invite à rehausser de votre présence aux cérémonies de mariage de leurs enfants.",
+    "La famille KASANANI vous invite à rehausser de votre présence aux cérémonies de mariage de leurs enfants.",
   date: "Samedi 21 Novembre 2026",
   location: "Kinshasa - RD Congo",
   programLabel: "Programme des Activités",
