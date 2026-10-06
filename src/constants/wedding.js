@@ -10,31 +10,28 @@ export const wedding = {
     "La famille vous invite à rehausser de votre présence aux cérémonies de mariage de leurs enfants.",
   date: "Samedi 21 Novembre 2026",
   location: "Kinshasa - RD Congo",
-  // Civil, religieux et réception se tiennent tous le même jour désormais -
-  // civil n'est plus une cérémonie à part sur une autre date (voir l'ancien
-  // champ `note` qui le précisait).
+  programLabel: "Programme des Activités",
+  // Civil, religieux et soirée dansante se tiennent tous le même jour.
   program: [
     {
-      title: "Mariage Civil",
-      place: "Hôtel de Ville de Kinshasa",
+      title: "Mariage civil",
+      place: "Commune de Ngaliema",
       time: "09H00",
     },
     {
-      title: "Mariage Religieux",
-      place: "Paroisse Sainte-Thérèse",
-      time: "12H30",
+      title: "Mariage religieux",
+      place:
+        "Paroisse Missionnaire de Kintambo (Av. Kwango n°7, Q. Joli-Parc, C. Ngaliema. Réf : Facebook Kintambo Magasin)",
+      time: "14H00",
     },
     {
-      title: "Prise des Vues",
-      place: "Jardin des Palmiers",
-      time: "15H00",
-    },
-    {
-      title: "Réception des Invités",
-      place: "Salle de fête Le Chocolat",
-      time: "17H00",
+      title: "Soirée dansante",
+      place:
+        "Salle polyvalente Félix Antoine Tshisekedi Tshilombo. Réf : Morgue du Camp Tshatshi, en face de TASOK.",
+      time: "20H00",
     },
   ],
-  note: "",
+  dressCode: "Black & Gold",
+  note: "De préférence, soyez muni de votre pièce d'identité.",
   contacts: ["+243 900 000 001", "+243 900 000 002"],
 };

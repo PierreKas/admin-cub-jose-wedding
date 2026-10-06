@@ -4,6 +4,7 @@ import { toPng } from "html-to-image";
 import { Check, Download, GlassWater } from "lucide-react";
 import InvitationCard from "../components/InvitationCard";
 import Monogram from "../components/Monogram";
+import FlowerRain from "../components/FlowerRain";
 import { choosePublicDrinks, getPublicInvitee } from "../api/inviteesApi";
 import { listPublicDrinks } from "../api/drinksApi";
 import { wedding } from "../constants/wedding";
@@ -86,8 +87,9 @@ const PublicInvitationPage = () => {
 
   return (
     <div className="min-h-screen bg-secondary bg-linear-to-br from-secondary to-chocolate flex flex-col items-center justify-center px-4 py-12">
+      <FlowerRain />
       <div className="text-center mb-6">
-        <Monogram size="w-14 h-14 mb-3" textSize="text-xl" />
+        <Monogram size="w-20 h-20 mb-2" />
         <h1 className="font-display text-xl font-bold text-cream">
           Mariage de {wedding.groom} &amp; {wedding.bride}
         </h1>

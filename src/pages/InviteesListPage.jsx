@@ -11,13 +11,23 @@ import {
 } from "lucide-react";
 import PageHeader from "../components/PageHeader";
 import { StatusPill, TypeTag } from "../components/Badges";
+import SearchableSelect from "../components/SearchableSelect";
 import { useInvitees } from "../hooks/useInvitees";
+import { useTables } from "../hooks/useTables";
 
-const FILTERS = [
+const STATUS_FILTERS = [
   { key: "tous", label: "Tous" },
   { key: "present", label: "Présents" },
   { key: "attente", label: "En attente" },
 ];
+
+const TYPE_FILTERS = [
+  { key: "tous", label: "Tous types" },
+  { key: "single", label: "Célibataire" },
+  { key: "couple", label: "Couple" },
+];
+
+const NO_TABLE = "__none__";
 
 const InviteeCard = ({ guest }) => {
   const { deleteInvitee } = useInvitees();
@@ -109,8 +119,11 @@ const InviteeCard = ({ guest }) => {
 
 const InviteesListPage = () => {
   const { invitees, loading } = useInvitees();
+  const { items: tables } = useTables();
   const [query, setQuery] = useState("");
-  const [filter, setFilter] = useState("tous");
+  const [statusFilter, setStatusFilter] = useState("tous");
+  const [typeFilter, setTypeFilter] = useState("tous");
+  const [tableFilter, setTableFilter] = useState("");
 
   const counts = useMemo(
     () => ({
@@ -121,11 +134,25 @@ const InviteesListPage = () => {
     [invitees],
   );
 
+  const tableOptions = useMemo(
+    () => [
+      { value: NO_TABLE, label: "Sans Table" },
+      ...tables.map((t) => ({ value: t.name, label: t.name })),
+    ],
+    [tables],
+  );
+
   const filtered = invitees.filter((g) => {
-    const matchesFilter = filter === "tous" || g.status === filter;
+    const matchesStatus = statusFilter === "tous" || g.status === statusFilter;
+    const matchesType = typeFilter === "tous" || g.type === typeFilter;
+    const matchesTable =
+      tableFilter === "" || (tableFilter === NO_TABLE ? g.table === "" : g.table === tableFilter);
     const matchesQuery = g.name.toLowerCase().includes(query.toLowerCase());
-    return matchesFilter && matchesQuery;
+    return matchesStatus && matchesType && matchesTable && matchesQuery;
   });
+
+  // Un "couple" compte pour 2 personnes dans le total affiché.
+  const headcount = filtered.reduce((sum, g) => sum + (g.type === "couple" ? 2 : 1), 0);
 
   return (
     <div>
@@ -143,34 +170,64 @@ const InviteesListPage = () => {
         }
       />
 
-      <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-6">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="w-4 h-4 text-secondary/40 absolute left-3.5 top-1/2 -translate-y-1/2" />
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Rechercher un invité"
-            className="w-full rounded-full border border-beige-dark bg-cream pl-10 pr-4 py-2.5 text-sm text-secondary outline-none focus:border-chocolate"
+      <div className="flex flex-col gap-3 mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="relative flex-1 max-w-sm">
+            <Search className="w-4 h-4 text-secondary/40 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Rechercher un invité"
+              className="w-full rounded-full border border-beige-dark bg-cream pl-10 pr-4 py-2.5 text-sm text-secondary outline-none focus:border-chocolate"
+            />
+          </div>
+          <div className="flex items-center gap-2 bg-cream border border-beige-dark rounded-full p-1">
+            {STATUS_FILTERS.map((f) => (
+              <button
+                key={f.key}
+                onClick={() => setStatusFilter(f.key)}
+                className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-colors ${
+                  statusFilter === f.key
+                    ? "bg-secondary text-cream"
+                    : "text-secondary/60 hover:text-secondary"
+                }`}
+              >
+                {f.label} ({counts[f.key]})
+              </button>
+            ))}
+          </div>
+          <span className="sm:ml-auto text-sm text-secondary/50">
+            {filtered.length} invitation{filtered.length > 1 ? "s" : ""} ·{" "}
+            <span className="font-semibold text-secondary">
+              {headcount} personne{headcount > 1 ? "s" : ""}
+            </span>
+          </span>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-2 bg-cream border border-beige-dark rounded-full p-1">
+            {TYPE_FILTERS.map((f) => (
+              <button
+                key={f.key}
+                onClick={() => setTypeFilter(f.key)}
+                className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-colors ${
+                  typeFilter === f.key
+                    ? "bg-secondary text-cream"
+                    : "text-secondary/60 hover:text-secondary"
+                }`}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+          <SearchableSelect
+            value={tableFilter}
+            onChange={setTableFilter}
+            options={tableOptions}
+            allLabel="Toutes les tables"
+            placeholder="Rechercher une table..."
           />
         </div>
-        <div className="flex items-center gap-2 bg-cream border border-beige-dark rounded-full p-1">
-          {FILTERS.map((f) => (
-            <button
-              key={f.key}
-              onClick={() => setFilter(f.key)}
-              className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-colors ${
-                filter === f.key
-                  ? "bg-secondary text-cream"
-                  : "text-secondary/60 hover:text-secondary"
-              }`}
-            >
-              {f.label} ({counts[f.key]})
-            </button>
-          ))}
-        </div>
-        <span className="sm:ml-auto text-sm text-secondary/50">
-          {filtered.length} invité{filtered.length > 1 ? "s" : ""}
-        </span>
       </div>
 
       {loading ? (

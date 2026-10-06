@@ -37,7 +37,7 @@ const LoginPage = () => {
     <div className="min-h-screen flex items-center justify-center bg-secondary bg-linear-to-br from-secondary to-chocolate px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <Monogram size="w-16 h-16 mb-4" textSize="text-2xl" />
+          <Monogram size="w-24 h-24 mb-2" />
           <h1 className="font-display text-2xl font-bold text-cream">
             Mariage Admin
           </h1>

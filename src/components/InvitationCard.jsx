@@ -29,7 +29,7 @@ const InvitationCard = forwardRef(({ guest }, ref) => {
       {/* panneau gauche */}
       <div className="relative flex flex-col justify-between p-6 sm:p-10 bg-gradient-to-br from-beige to-cream">
         <div>
-          <Monogram size="w-14 h-14 sm:w-16 sm:h-16 mb-3" textSize="text-xl sm:text-2xl" />
+          <Monogram size="w-20 h-20 sm:w-24 sm:h-24 mb-2" />
           <p className="font-script text-5xl sm:text-6xl leading-none text-chocolate">
             Invitation
           </p>
@@ -87,13 +87,19 @@ const InvitationCard = forwardRef(({ guest }, ref) => {
           )}
         </div>
 
+        {wedding.programLabel && (
+          <p className="text-center text-[10px] sm:text-xs uppercase tracking-[0.2em] text-accent font-semibold mb-3 sm:mb-4">
+            {wedding.programLabel}
+          </p>
+        )}
+
         <div className="flex-1 space-y-3 sm:space-y-5">
           {wedding.program.map((item) => (
             <div key={item.title} className="text-center">
               <p className="font-display font-bold uppercase text-xs sm:text-base leading-tight">
                 {item.title}
               </p>
-              <p className="text-[10px] sm:text-xs text-cream/60">
+              <p className="text-[10px] sm:text-xs text-cream/60 px-2 leading-snug">
                 {item.place}
               </p>
               <span className="inline-block bg-accent text-chocolate-dark font-bold text-[11px] sm:text-sm px-3 sm:px-4 py-0.5 sm:py-1 rounded mt-1">
@@ -103,8 +109,16 @@ const InvitationCard = forwardRef(({ guest }, ref) => {
           ))}
         </div>
 
+        {wedding.dressCode && (
+          <div className="flex justify-center mt-3 sm:mt-4">
+            <span className="inline-flex items-center gap-1.5 border border-accent text-accent text-[10px] sm:text-xs font-semibold uppercase tracking-wide px-3 py-1 rounded-full">
+              Dress code : {wedding.dressCode}
+            </span>
+          </div>
+        )}
+
         {wedding.note && (
-          <p className="text-[9px] sm:text-[11px] text-cream/50 leading-snug mt-3">
+          <p className="text-center text-[9px] sm:text-[11px] text-cream/50 leading-snug mt-3">
             {wedding.note}
           </p>
         )}

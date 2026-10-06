@@ -35,7 +35,7 @@ const SidebarContent = ({ onNavigate }) => {
     <div className="h-full flex flex-col bg-secondary text-beige">
       <div className="px-6 py-7 border-b border-white/10">
         <Link to="/admin" className="flex items-center gap-3">
-          <Monogram size="w-11 h-11" textSize="text-sm" />
+          <Monogram size="w-12 h-12" />
           <span>
             <span className="block font-display text-lg font-bold text-cream leading-tight">
               Mariage Admin

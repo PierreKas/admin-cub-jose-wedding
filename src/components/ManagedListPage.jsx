@@ -14,12 +14,20 @@ const ManagedListPage = ({
   emptyLabel,
   useStore,
   renderExtra,
+  // Optional [{ key, label, predicate(item) }] - renders a pill-filter bar
+  // above the list and only shows items matching the active filter's
+  // predicate. Omit for pages that don't need one (e.g. Drinks).
+  filters,
 }) => {
   const { items, loading, add, update, remove } = useStore();
   const [newName, setNewName] = useState("");
   const [editingId, setEditingId] = useState(null);
   const [editValue, setEditValue] = useState("");
   const [error, setError] = useState("");
+  const [activeFilter, setActiveFilter] = useState(filters?.[0]?.key);
+
+  const activePredicate = filters?.find((f) => f.key === activeFilter)?.predicate;
+  const visibleItems = activePredicate ? items.filter(activePredicate) : items;
 
   const onAdd = async (e) => {
     e.preventDefault();
@@ -84,13 +92,31 @@ const ManagedListPage = ({
         </button>
       </form>
 
+      {filters && (
+        <div className="flex items-center gap-2 bg-cream border border-beige-dark rounded-full p-1 mb-6 w-fit">
+          {filters.map((f) => (
+            <button
+              key={f.key}
+              onClick={() => setActiveFilter(f.key)}
+              className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-colors ${
+                activeFilter === f.key
+                  ? "bg-secondary text-cream"
+                  : "text-secondary/60 hover:text-secondary"
+              }`}
+            >
+              {f.label} ({items.filter(f.predicate).length})
+            </button>
+          ))}
+        </div>
+      )}
+
       {error && <p className="text-red-600 text-xs -mt-5 mb-6">{error}</p>}
 
       {loading ? (
         <p className="text-secondary/50 text-sm">Chargement...</p>
-      ) : items.length > 0 ? (
+      ) : visibleItems.length > 0 ? (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl">
-          {items.map((item) => (
+          {visibleItems.map((item) => (
             <div
               key={item.id}
               className="bg-cream rounded-xl border border-beige-dark/60 p-4 flex items-center justify-between gap-3"
@@ -154,7 +180,9 @@ const ManagedListPage = ({
         </div>
       ) : (
         <div className="text-center py-16 bg-cream rounded-2xl border border-dashed border-beige-dark max-w-4xl">
-          <p className="text-secondary/60">{emptyLabel}</p>
+          <p className="text-secondary/60">
+            {items.length === 0 ? emptyLabel : "Aucun résultat pour ce filtre."}
+          </p>
         </div>
       )}
     </div>

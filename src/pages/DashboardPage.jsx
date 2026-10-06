@@ -4,6 +4,7 @@ import { CheckCircle2, Clock3, QrCode, UserPlus, Users } from "lucide-react";
 import PageHeader from "../components/PageHeader";
 import { StatusPill, TypeTag } from "../components/Badges";
 import { useInvitees } from "../hooks/useInvitees";
+import { useTables } from "../hooks/useTables";
 import { wedding } from "../constants/wedding";
 
 const StatCard = ({ icon: Icon, label, value, tint }) => (
@@ -20,12 +21,15 @@ const StatCard = ({ icon: Icon, label, value, tint }) => (
 
 const DashboardPage = () => {
   const { invitees, loading } = useInvitees();
+  const { items: tables } = useTables();
 
   const total = invitees.length;
   const presents = invitees.filter((g) => g.status === "present").length;
   const attente = total - presents;
   const couples = invitees.filter((g) => g.type === "couple").length;
   const singles = total - couples;
+  // Un "couple" compte pour 2 personnes - c'est le nombre de personnes
+  // attendues qui importe le plus, pas le nombre de fiches/invitations.
   const expectedGuests = invitees.reduce(
     (sum, g) => sum + (g.type === "couple" ? 2 : 1),
     0,
@@ -57,7 +61,7 @@ const DashboardPage = () => {
         <StatCard
           icon={Users}
           label="Invités enregistrés"
-          value={total}
+          value={expectedGuests}
           tint="bg-chocolate/10 text-chocolate"
         />
         <StatCard
@@ -132,6 +136,15 @@ const DashboardPage = () => {
             <div className="flex items-center justify-between">
               <span className="text-cream/70">Invitations individuelles</span>
               <span className="font-semibold">{singles}</span>
+            </div>
+            <div className="h-px bg-white/10" />
+            <div className="flex items-center justify-between">
+              <span className="text-cream/70">Invitations enregistrées</span>
+              <span className="font-semibold">{total}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-cream/70">Tables enregistrées</span>
+              <span className="font-semibold">{tables.length}</span>
             </div>
             <div className="h-px bg-white/10" />
             <div className="flex items-center justify-between">

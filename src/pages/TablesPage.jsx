@@ -14,6 +14,11 @@ const TablesPage = () => {
       placeholder="Ex : Madagascar"
       emptyLabel="Aucune table pour le moment. Ajoutez-en une ci-dessus."
       useStore={useTables}
+      filters={[
+        { key: "toutes", label: "Toutes", predicate: () => true },
+        { key: "vides", label: "Vides", predicate: (t) => countFor(t.name) === 0 },
+        { key: "occupees", label: "Occupées", predicate: (t) => countFor(t.name) > 0 },
+      ]}
       renderExtra={(item) => {
         const n = countFor(item.name);
         return (

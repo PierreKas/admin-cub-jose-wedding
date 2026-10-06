@@ -1,17 +1,21 @@
 import React from "react";
+import logo from "../assets/logo.webp";
 
 /**
- * Gold-on-black "CJ" badge echoing the save-the-date design
- * (images/save-the-date.jpeg) - reused everywhere the app previously
- * showed a plain heart-in-circle logo (login, public invitation header,
- * admin sidebar, the invitation card itself).
+ * The real "CJ" wedding logo (images/Logo.png - compressed from an
+ * original 17MB/5619px source down to this ~165KB WebP, see
+ * src/assets/logo.webp) - reused everywhere the app shows its brand mark
+ * (login, public invitation header, admin sidebar, the invitation card).
+ * No rounded-full/border wrapper here on purpose - the artwork's black
+ * circle and floral sprays are already baked into the transparent image
+ * and extend past a perfect circle, clipping it would cut the flowers off.
  */
-const Monogram = ({ size = "w-14 h-14", textSize = "text-xl" }) => (
-  <span
-    className={`inline-flex items-center justify-center rounded-full bg-secondary border-2 border-accent shrink-0 ${size}`}
-  >
-    <span className={`font-script text-accent leading-none ${textSize}`}>CJ</span>
-  </span>
+const Monogram = ({ size = "w-14 h-14" }) => (
+  <img
+    src={logo}
+    alt="Christian & Joséphine"
+    className={`inline-block object-contain shrink-0 ${size}`}
+  />
 );
 
 export default Monogram;
