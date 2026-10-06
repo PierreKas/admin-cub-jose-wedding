@@ -27,11 +27,11 @@ export const wedding = {
     {
       title: "Soirée dansante",
       place:
-        "Salle polyvalente Félix Antoine Tshisekedi Tshilombo. Réf : Morgue du Camp Tshatshi, en face de TASOK.",
+        "Salle polyvalente Félix Antoine Tshisekedi Tshilombo. Réf: TASOK.",
       time: "20H00",
     },
   ],
   dressCode: "Black & Gold",
   note: "De préférence, soyez muni de votre pièce d'identité.",
-  contacts: ["+243 900 000 001", "+243 900 000 002"],
+  contacts: ["+243 998 821 012", "+243 993 349 555"],
 };
