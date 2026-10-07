@@ -33,5 +33,5 @@ export const wedding = {
   ],
   dressCode: "Black & Gold",
   note: "De préférence, soyez muni de votre pièce d'identité.",
-  contacts: ["+243 998 821 012", "+243 993 349 555"],
+  contacts: ["+243 998 675 827", "+243 998 821 012", "+243 993 349 555"],
 };

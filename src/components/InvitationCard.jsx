@@ -44,7 +44,7 @@ const InvitationCard = forwardRef(({ guest }, ref) => {
               </p>
               {guest.type !== "couple" && (
                 <span className="inline-block mt-2 text-[10px] sm:text-xs font-semibold uppercase tracking-wide bg-chocolate/10 text-chocolate px-2.5 py-1 rounded-full">
-                  Invitation Individuelle
+                  Invitation Singleton
                 </span>
               )}
             </div>
