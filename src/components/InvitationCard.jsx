@@ -42,9 +42,18 @@ const InvitationCard = forwardRef(({ guest }, ref) => {
                 {guest.civility ? `${guest.civility} ` : ""}
                 {guest.name}
               </p>
-              {guest.type !== "couple" && (
+              {/* {guest.type !== "couple" && (
                 <span className="inline-block mt-2 text-[10px] sm:text-xs font-semibold uppercase tracking-wide bg-chocolate/10 text-chocolate px-2.5 py-1 rounded-full">
-                  Invitation Singleton
+                  Invitation Individuelle
+                </span>
+              )} */}
+              {guest.type !== "couple" ? (
+                <span className="inline-block mt-2 text-[10px] sm:text-xs font-semibold uppercase tracking-wide bg-chocolate/10 text-chocolate px-2.5 py-1 rounded-full">
+                  Invitation Individuelle
+                </span>
+              ) : (
+                <span className="inline-block mt-2 text-[10px] sm:text-xs font-semibold uppercase tracking-wide bg-chocolate/10 text-chocolate px-2.5 py-1 rounded-full">
+                  Invitation Couple
                 </span>
               )}
             </div>
