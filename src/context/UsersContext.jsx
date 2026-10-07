@@ -10,7 +10,7 @@ export const UsersProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   const refresh = useCallback(async () => {
-    if (!isAuthenticated || role !== "ADMIN") {
+    if (!isAuthenticated || !["ADMIN", "CO_ADMIN"].includes(role)) {
       setUsers([]);
       setLoading(false);
       return;

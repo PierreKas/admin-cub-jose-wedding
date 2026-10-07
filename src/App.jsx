@@ -41,22 +41,20 @@ function App() {
                       </RequireAuth>
                     }
                   >
-                    {/* Admin-only pages - a Protocol account is redirected to /admin/scanner (RequireAuth) */}
-                    <Route element={<RequireAuth roles={["ADMIN"]}><Outlet /></RequireAuth>}>
+                    {/* Admin + Co-Admin pages (CO_ADMIN has the same read access, just no writes) - a Protocol account is redirected to /admin/scanner (RequireAuth) */}
+                    <Route element={<RequireAuth roles={["ADMIN", "CO_ADMIN"]}><Outlet /></RequireAuth>}>
                       <Route index element={<DashboardPage />} />
                       <Route path="invites" element={<InviteesListPage />} />
-                      <Route
-                        path="invites/nouveau"
-                        element={<InviteeFormPage />}
-                      />
                       <Route path="invites/:id" element={<InviteeDetailPage />} />
-                      <Route
-                        path="invites/:id/modifier"
-                        element={<InviteeFormPage />}
-                      />
                       <Route path="tables" element={<TablesPage />} />
                       <Route path="boissons" element={<DrinksPage />} />
                       <Route path="utilisateurs" element={<UsersPage />} />
+                    </Route>
+
+                    {/* Pure write pages - ADMIN only, even CO_ADMIN can't create/edit invitees */}
+                    <Route element={<RequireAuth roles={["ADMIN"]} fallback="/admin/invites"><Outlet /></RequireAuth>}>
+                      <Route path="invites/nouveau" element={<InviteeFormPage />} />
+                      <Route path="invites/:id/modifier" element={<InviteeFormPage />} />
                     </Route>
 
                     {/* Both ADMIN and PROTOCOL reach the scanner */}

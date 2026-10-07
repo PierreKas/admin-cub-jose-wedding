@@ -1,14 +1,15 @@
 import React, { useState } from "react";
-import { Plus, ShieldCheck, Trash2, UserCog } from "lucide-react";
+import { Eye, Plus, ShieldCheck, Trash2, UserCog } from "lucide-react";
 import PageHeader from "../components/PageHeader";
 import { useUsers } from "../hooks/useUsers";
 import { useAuth } from "../hooks/useAuth";
 
-const ROLE_LABELS = { ADMIN: "Administrateur", PROTOCOL: "Protocole" };
+const ROLE_LABELS = { ADMIN: "Administrateur", CO_ADMIN: "Co-Administrateur", PROTOCOL: "Protocole" };
 
 const UsersPage = () => {
   const { users, loading, addUser, deleteUser } = useUsers();
-  const { username: currentUsername } = useAuth();
+  const { username: currentUsername, role: myRole } = useAuth();
+  const isReadOnly = myRole === "CO_ADMIN";
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("PROTOCOL");
@@ -48,6 +49,7 @@ const UsersPage = () => {
         subtitle="Gérez les comptes qui peuvent se connecter - administrateurs (accès complet) et protocole (scanner uniquement)."
       />
 
+      {!isReadOnly && (
       <form
         onSubmit={onAdd}
         className="max-w-xl bg-cream rounded-2xl shadow-sm border border-beige-dark/60 p-6 sm:p-8 space-y-5 mb-8"
@@ -81,7 +83,7 @@ const UsersPage = () => {
           <label className="block text-xs font-semibold uppercase tracking-wide text-secondary/60 mb-3">
             Rôle
           </label>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             <button
               type="button"
               onClick={() => setRole("ADMIN")}
@@ -93,7 +95,20 @@ const UsersPage = () => {
             >
               <ShieldCheck className="w-5 h-5" />
               <span className="text-sm font-semibold">Administrateur</span>
-              <span className="text-[11px] text-secondary/50">Accès complet</span>
+              <span className="text-[11px] text-secondary/50 text-center">Accès complet</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setRole("CO_ADMIN")}
+              className={`flex flex-col items-center gap-2 rounded-xl border-2 py-4 transition-colors ${
+                role === "CO_ADMIN"
+                  ? "border-chocolate bg-chocolate/5"
+                  : "border-beige-dark text-secondary/60"
+              }`}
+            >
+              <Eye className="w-5 h-5" />
+              <span className="text-sm font-semibold">Co-Admin</span>
+              <span className="text-[11px] text-secondary/50 text-center">Tout voir, lecture seule</span>
             </button>
             <button
               type="button"
@@ -106,7 +121,7 @@ const UsersPage = () => {
             >
               <UserCog className="w-5 h-5" />
               <span className="text-sm font-semibold">Protocole</span>
-              <span className="text-[11px] text-secondary/50">Scanner uniquement</span>
+              <span className="text-[11px] text-secondary/50 text-center">Scanner uniquement</span>
             </button>
           </div>
         </div>
@@ -122,6 +137,7 @@ const UsersPage = () => {
           {submitting ? "Création..." : "Créer l'utilisateur"}
         </button>
       </form>
+      )}
 
       {loading ? (
         <p className="text-secondary/50 text-sm">Chargement...</p>
@@ -141,6 +157,7 @@ const UsersPage = () => {
                   <p className="text-xs text-secondary/50">{ROLE_LABELS[user.role] || user.role}</p>
                 </div>
               </div>
+              {!isReadOnly && (
               <button
                 onClick={() => onDelete(user)}
                 disabled={user.username === currentUsername}
@@ -150,6 +167,7 @@ const UsersPage = () => {
               >
                 <Trash2 className="w-4 h-4" />
               </button>
+              )}
             </div>
           ))}
         </div>

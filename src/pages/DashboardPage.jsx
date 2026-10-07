@@ -5,6 +5,7 @@ import PageHeader from "../components/PageHeader";
 import { StatusPill, TypeTag } from "../components/Badges";
 import { useInvitees } from "../hooks/useInvitees";
 import { useTables } from "../hooks/useTables";
+import { useAuth } from "../hooks/useAuth";
 import { wedding } from "../constants/wedding";
 
 const StatCard = ({ icon: Icon, label, value, tint }) => (
@@ -22,6 +23,8 @@ const StatCard = ({ icon: Icon, label, value, tint }) => (
 const DashboardPage = () => {
   const { invitees, loading } = useInvitees();
   const { items: tables } = useTables();
+  const { role } = useAuth();
+  const isReadOnly = role === "CO_ADMIN";
 
   const total = invitees.length;
   const presents = invitees.filter((g) => g.status === "present").length;
@@ -43,13 +46,15 @@ const DashboardPage = () => {
         title="Tableau de bord"
         subtitle={`Suivi des invitations pour le mariage de ${wedding.groom} & ${wedding.bride}.`}
         action={
-          <Link
-            to="/admin/invites/nouveau"
-            className="inline-flex items-center gap-2 bg-chocolate text-cream px-5 py-2.5 rounded-full font-semibold text-sm hover:bg-chocolate-dark transition-colors duration-200"
-          >
-            <UserPlus className="w-4 h-4" />
-            Nouvel invité
-          </Link>
+          !isReadOnly && (
+            <Link
+              to="/admin/invites/nouveau"
+              className="inline-flex items-center gap-2 bg-chocolate text-cream px-5 py-2.5 rounded-full font-semibold text-sm hover:bg-chocolate-dark transition-colors duration-200"
+            >
+              <UserPlus className="w-4 h-4" />
+              Nouvel invité
+            </Link>
+          )
         }
       />
 

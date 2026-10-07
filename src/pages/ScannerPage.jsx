@@ -37,7 +37,7 @@ const GuestDetails = ({ guest }) => (
 );
 
 /** Panneau affiché après un scan : confirmation, déjà présent, ou invalide. */
-const ScanResultPanel = ({ result, onConfirm, onClose }) => {
+const ScanResultPanel = ({ result, onConfirm, onClose, readOnly }) => {
   if (!result) return null;
 
   const { outcome, guest } = result;
@@ -141,23 +141,34 @@ const ScanResultPanel = ({ result, onConfirm, onClose }) => {
           <TypeTag type={guest.type} />
         </div>
         <p className="text-secondary/70 text-sm mb-4">
-          Marquer la présence de cet invité ?
+          {readOnly
+            ? "Détails de cet invité (compte en lecture seule - confirmation non disponible)."
+            : "Marquer la présence de cet invité ?"}
         </p>
         <GuestDetails guest={guest} />
-        <div className="grid grid-cols-2 gap-3">
+        {readOnly ? (
           <button
             onClick={onClose}
-            className="border border-beige-dark text-secondary font-semibold py-2.5 rounded-full hover:bg-beige transition-colors"
+            className="w-full bg-secondary text-cream font-semibold py-2.5 rounded-full hover:bg-chocolate transition-colors"
           >
-            Annuler
+            Fermer
           </button>
-          <button
-            onClick={() => onConfirm(guest.id)}
-            className="bg-chocolate text-cream font-semibold py-2.5 rounded-full hover:bg-chocolate-dark transition-colors"
-          >
-            Confirmer
-          </button>
-        </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={onClose}
+              className="border border-beige-dark text-secondary font-semibold py-2.5 rounded-full hover:bg-beige transition-colors"
+            >
+              Annuler
+            </button>
+            <button
+              onClick={() => onConfirm(guest.id)}
+              className="bg-chocolate text-cream font-semibold py-2.5 rounded-full hover:bg-chocolate-dark transition-colors"
+            >
+              Confirmer
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -167,10 +178,14 @@ const ScannerPage = () => {
   const { invitees, resolveScannedCode, markPresent } = useInvitees();
   const { role } = useAuth();
   // The full roster (used only by the no-camera test panel below) is
-  // admin-only - a Protocol account's InviteesProvider never fetches it
-  // (see context/InviteesContext.jsx), so this panel would just render
-  // empty for them; hide it outright instead of showing a confusing blank list.
-  const canSeeRoster = role === "ADMIN";
+  // admin/co-admin only - a Protocol account's InviteesProvider never
+  // fetches it (see context/InviteesContext.jsx), so this panel would just
+  // render empty for them; hide it outright instead of showing a confusing
+  // blank list.
+  const canSeeRoster = ["ADMIN", "CO_ADMIN"].includes(role);
+  // Co-Admin can see everything but checking someone in is a write - block
+  // just that one action, not the detail view itself.
+  const isReadOnly = role === "CO_ADMIN";
   const [cameraState, setCameraState] = useState("idle"); // idle | starting | running | error
   const [result, setResult] = useState(null);
   const scannerRef = useRef(null);
@@ -329,6 +344,7 @@ const ScannerPage = () => {
         result={result}
         onConfirm={onConfirmPresence}
         onClose={() => setResult(null)}
+        readOnly={isReadOnly}
       />
     </div>
   );

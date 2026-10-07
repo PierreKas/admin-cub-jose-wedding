@@ -14,6 +14,7 @@ import { StatusPill, TypeTag } from "../components/Badges";
 import SearchableSelect from "../components/SearchableSelect";
 import { useInvitees } from "../hooks/useInvitees";
 import { useTables } from "../hooks/useTables";
+import { useAuth } from "../hooks/useAuth";
 
 const STATUS_FILTERS = [
   { key: "tous", label: "Tous" },
@@ -31,6 +32,8 @@ const NO_TABLE = "__none__";
 
 const InviteeCard = ({ guest }) => {
   const { deleteInvitee } = useInvitees();
+  const { role } = useAuth();
+  const isReadOnly = role === "CO_ADMIN";
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -66,20 +69,24 @@ const InviteeCard = ({ guest }) => {
                 >
                   <QrCode className="w-4 h-4" /> Voir l'invitation
                 </button>
-                <button
-                  onClick={() =>
-                    navigate(`/admin/invites/${guest.id}/modifier`)
-                  }
-                  className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-secondary hover:bg-beige"
-                >
-                  <Pencil className="w-4 h-4" /> Modifier
-                </button>
-                <button
-                  onClick={onDelete}
-                  className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50"
-                >
-                  <Trash2 className="w-4 h-4" /> Supprimer
-                </button>
+                {!isReadOnly && (
+                  <>
+                    <button
+                      onClick={() =>
+                        navigate(`/admin/invites/${guest.id}/modifier`)
+                      }
+                      className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-secondary hover:bg-beige"
+                    >
+                      <Pencil className="w-4 h-4" /> Modifier
+                    </button>
+                    <button
+                      onClick={onDelete}
+                      className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50"
+                    >
+                      <Trash2 className="w-4 h-4" /> Supprimer
+                    </button>
+                  </>
+                )}
               </div>
             </>
           )}
@@ -120,6 +127,8 @@ const InviteeCard = ({ guest }) => {
 const InviteesListPage = () => {
   const { invitees, loading } = useInvitees();
   const { items: tables } = useTables();
+  const { role } = useAuth();
+  const isReadOnly = role === "CO_ADMIN";
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("tous");
   const [typeFilter, setTypeFilter] = useState("tous");
@@ -160,13 +169,15 @@ const InviteesListPage = () => {
         title="Invités"
         subtitle="Créez, modifiez et suivez la liste des invités du mariage."
         action={
-          <Link
-            to="/admin/invites/nouveau"
-            className="inline-flex items-center gap-2 bg-chocolate text-cream px-5 py-2.5 rounded-full font-semibold text-sm hover:bg-chocolate-dark transition-colors duration-200"
-          >
-            <UserPlus className="w-4 h-4" />
-            Nouvel invité
-          </Link>
+          !isReadOnly && (
+            <Link
+              to="/admin/invites/nouveau"
+              className="inline-flex items-center gap-2 bg-chocolate text-cream px-5 py-2.5 rounded-full font-semibold text-sm hover:bg-chocolate-dark transition-colors duration-200"
+            >
+              <UserPlus className="w-4 h-4" />
+              Nouvel invité
+            </Link>
+          )
         }
       />
 

@@ -2,9 +2,11 @@ import React from "react";
 import ManagedListPage from "../components/ManagedListPage";
 import { useTables } from "../hooks/useTables";
 import { useInvitees } from "../hooks/useInvitees";
+import { useAuth } from "../hooks/useAuth";
 
 const TablesPage = () => {
   const { invitees } = useInvitees();
+  const { role } = useAuth();
   const countFor = (name) => invitees.filter((g) => g.table === name).length;
 
   return (
@@ -14,6 +16,7 @@ const TablesPage = () => {
       placeholder="Ex : Madagascar"
       emptyLabel="Aucune table pour le moment. Ajoutez-en une ci-dessus."
       useStore={useTables}
+      readOnly={role === "CO_ADMIN"}
       filters={[
         { key: "toutes", label: "Toutes", predicate: () => true },
         { key: "vides", label: "Vides", predicate: (t) => countFor(t.name) === 0 },

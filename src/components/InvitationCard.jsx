@@ -4,9 +4,6 @@ import { encodeGuestPayload } from "../constants/qrPayload";
 import { useQrDataUrl } from "../hooks/useQrDataUrl";
 import Monogram from "./Monogram";
 
-const typeLabel = (type) =>
-  type === "couple" ? "Invitation Couple" : "Invitation Individuelle";
-
 /**
  * Carte d'invitation Christian & Joséphine, avec le QR code de l'invité
  * incrusté directement dedans. C'est ce noeud DOM qui est exporté en PNG
@@ -45,9 +42,11 @@ const InvitationCard = forwardRef(({ guest }, ref) => {
                 {guest.civility ? `${guest.civility} ` : ""}
                 {guest.name}
               </p>
-              <span className="inline-block mt-2 text-[10px] sm:text-xs font-semibold uppercase tracking-wide bg-chocolate/10 text-chocolate px-2.5 py-1 rounded-full">
-                {typeLabel(guest.type)}
-              </span>
+              {guest.type !== "couple" && (
+                <span className="inline-block mt-2 text-[10px] sm:text-xs font-semibold uppercase tracking-wide bg-chocolate/10 text-chocolate px-2.5 py-1 rounded-full">
+                  Invitation Individuelle
+                </span>
+              )}
             </div>
           )}
           <p className="text-xs sm:text-sm leading-relaxed text-chocolate-dark/80">

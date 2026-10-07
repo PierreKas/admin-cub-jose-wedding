@@ -15,17 +15,17 @@ import { useAuth } from "../hooks/useAuth";
 import Monogram from "./Monogram";
 import { wedding } from "../constants/wedding";
 
-// No `roles` = visible to every logged-in role (only the scanner qualifies - a Protocol account can't reach anything else, see RequireAuth in App.jsx).
+// No `roles` = visible to every logged-in role (only the scanner qualifies - a Protocol account can't reach anything else, see RequireAuth in App.jsx). CO_ADMIN has the same read access as ADMIN everywhere here, just no write buttons once on the page.
 const navItems = [
-  { to: "/admin", label: "Tableau de bord", icon: LayoutDashboard, end: true, roles: ["ADMIN"] },
-  { to: "/admin/invites", label: "Invités", icon: Users, roles: ["ADMIN"] },
-  { to: "/admin/tables", label: "Tables", icon: Table2, roles: ["ADMIN"] },
-  { to: "/admin/boissons", label: "Boissons", icon: GlassWater, roles: ["ADMIN"] },
-  { to: "/admin/utilisateurs", label: "Utilisateurs", icon: UserCog, roles: ["ADMIN"] },
+  { to: "/admin", label: "Tableau de bord", icon: LayoutDashboard, end: true, roles: ["ADMIN", "CO_ADMIN"] },
+  { to: "/admin/invites", label: "Invités", icon: Users, roles: ["ADMIN", "CO_ADMIN"] },
+  { to: "/admin/tables", label: "Tables", icon: Table2, roles: ["ADMIN", "CO_ADMIN"] },
+  { to: "/admin/boissons", label: "Boissons", icon: GlassWater, roles: ["ADMIN", "CO_ADMIN"] },
+  { to: "/admin/utilisateurs", label: "Utilisateurs", icon: UserCog, roles: ["ADMIN", "CO_ADMIN"] },
   { to: "/admin/scanner", label: "Scanner QR", icon: QrCode },
 ];
 
-const ROLE_LABELS = { ADMIN: "Administrateur", PROTOCOL: "Protocole" };
+const ROLE_LABELS = { ADMIN: "Administrateur", CO_ADMIN: "Co-Administrateur", PROTOCOL: "Protocole" };
 
 const SidebarContent = ({ onNavigate }) => {
   const { logout, role, username } = useAuth();

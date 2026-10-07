@@ -9,11 +9,12 @@ import { useAuth } from "../hooks/useAuth";
 
 /**
  * Fabrique un petit store CRUD (liste d'objets { id, name, ... }) adosse a
- * l'API reelle - utilisee par les boissons et les tables, qui partagent
- * exactement la meme forme (nom + CRUD, voir api/namedListApi.js cote
- * backend comme cote frontend). Renvoie un Provider et un hook useStore
- * distincts, chacun re-exporte depuis son propre fichier pour ne pas
- * melanger composant/hook dans un seul module (react-refresh).
+ * l'API reelle - utilisee par les tables (voir api/namedListApi.js cote
+ * backend comme cote frontend; les boissons ont depuis leur propre store
+ * sur mesure, context/DrinksContext.jsx, a cause du champ `alcoholic` en
+ * plus). Renvoie un Provider et un hook useStore distincts, chacun
+ * re-exporte depuis son propre fichier pour ne pas melanger
+ * composant/hook dans un seul module (react-refresh).
  */
 export function createListStore(api) {
   const Ctx = createContext(null);
@@ -23,9 +24,9 @@ export function createListStore(api) {
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    // Tables/Drinks admin CRUD is admin-only (JwtAuthFilter) - a Protocol account never needs this list.
+    // Tables admin CRUD is admin/co-admin only (JwtAuthFilter) - a Protocol account never needs this list.
     const refresh = useCallback(async () => {
-      if (!isAuthenticated || role !== "ADMIN") {
+      if (!isAuthenticated || !["ADMIN", "CO_ADMIN"].includes(role)) {
         setItems([]);
         setLoading(false);
         return;

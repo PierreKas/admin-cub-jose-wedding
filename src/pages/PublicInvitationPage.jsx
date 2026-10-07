@@ -1,13 +1,14 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { toPng } from "html-to-image";
-import { Check, Download, GlassWater } from "lucide-react";
+import { Check, Download, GlassWater, Martini } from "lucide-react";
 import InvitationCard from "../components/InvitationCard";
 import Monogram from "../components/Monogram";
 import FlowerRain from "../components/FlowerRain";
 import { choosePublicDrinks, getPublicInvitee } from "../api/inviteesApi";
 import { listPublicDrinks } from "../api/drinksApi";
 import { wedding } from "../constants/wedding";
+import { extractUuid } from "../utils/slug";
 
 /**
  * Deliberately independent from InviteesContext/DrinksContext - those back
@@ -16,7 +17,12 @@ import { wedding } from "../constants/wedding";
  * `/api/public/**` endpoints.
  */
 const PublicInvitationPage = () => {
-  const { id } = useParams();
+  const { id: rawId } = useParams();
+  // Links now read /invitation/<name-slug>-<uuid> (InviteeDetailPage) - the
+  // slug is purely cosmetic, only the trailing uuid is ever looked up.
+  // Older bare-uuid links (sent out before this existed) still resolve fine,
+  // extractUuid is a no-op on those.
+  const id = extractUuid(rawId);
   const [guest, setGuest] = useState(null);
   const [drinks, setDrinks] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -85,6 +91,32 @@ const PublicInvitationPage = () => {
     setTimeout(() => setJustSaved(false), 2500);
   };
 
+  const renderDrinkPill = (d) => {
+    const selected = selectedDrinks.includes(d.name);
+    const disabled = !selected && selectedDrinks.length >= maxDrinks;
+    return (
+      <button
+        key={d.id}
+        onClick={() => toggleDrink(d.name)}
+        disabled={disabled}
+        className={`inline-flex items-center gap-1.5 text-sm font-medium px-4 py-2 rounded-full border-2 transition-colors ${
+          selected
+            ? "bg-chocolate text-cream border-chocolate"
+            : disabled
+              ? "border-beige-dark/40 text-chocolate-dark/30 cursor-not-allowed"
+              : "border-beige-dark text-chocolate-dark hover:bg-beige"
+        }`}
+      >
+        {selected && <Check className="w-3.5 h-3.5" />}
+        {d.name}
+      </button>
+    );
+  };
+
+  // Non-alcoolisées d'abord, puis alcoolisées - chaque groupe clairement annoncé.
+  const nonAlcoholicDrinks = drinks.filter((d) => !d.alcoholic);
+  const alcoholicDrinks = drinks.filter((d) => d.alcoholic);
+
   return (
     <div className="min-h-screen bg-secondary bg-linear-to-br from-secondary to-chocolate flex flex-col items-center justify-center px-4 py-12">
       <FlowerRain />
@@ -126,29 +158,25 @@ const PublicInvitationPage = () => {
                   ? "En tant que couple, choisissez jusqu'à 2 boissons - modifiable à tout moment."
                   : "Faites votre choix, il pourra être modifié à tout moment."}
               </p>
-              <div className="flex flex-wrap gap-2.5">
-                {drinks.map((d) => {
-                  const selected = selectedDrinks.includes(d.name);
-                  const disabled = !selected && selectedDrinks.length >= maxDrinks;
-                  return (
-                    <button
-                      key={d.id}
-                      onClick={() => toggleDrink(d.name)}
-                      disabled={disabled}
-                      className={`inline-flex items-center gap-1.5 text-sm font-medium px-4 py-2 rounded-full border-2 transition-colors ${
-                        selected
-                          ? "bg-chocolate text-cream border-chocolate"
-                          : disabled
-                            ? "border-beige-dark/40 text-chocolate-dark/30 cursor-not-allowed"
-                            : "border-beige-dark text-chocolate-dark hover:bg-beige"
-                      }`}
-                    >
-                      {selected && <Check className="w-3.5 h-3.5" />}
-                      {d.name}
-                    </button>
-                  );
-                })}
-              </div>
+              {nonAlcoholicDrinks.length > 0 && (
+                <div className="mb-4">
+                  <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-emerald-700 mb-2">
+                    <GlassWater className="w-3.5 h-3.5" />
+                    Sans alcool
+                  </p>
+                  <div className="flex flex-wrap gap-2.5">{nonAlcoholicDrinks.map(renderDrinkPill)}</div>
+                </div>
+              )}
+
+              {alcoholicDrinks.length > 0 && (
+                <div>
+                  <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-amber-700 mb-2">
+                    <Martini className="w-3.5 h-3.5" />
+                    Avec alcool
+                  </p>
+                  <div className="flex flex-wrap gap-2.5">{alcoholicDrinks.map(renderDrinkPill)}</div>
+                </div>
+              )}
               {justSaved && (
                 <p className="text-emerald-700 text-xs font-semibold mt-3">
                   Merci, votre choix a été enregistré !

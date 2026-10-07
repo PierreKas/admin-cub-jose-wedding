@@ -11,10 +11,14 @@ import {
 import InvitationCard from "../components/InvitationCard";
 import { StatusPill, TypeTag } from "../components/Badges";
 import { useInvitees } from "../hooks/useInvitees";
+import { useAuth } from "../hooks/useAuth";
+import { slugifyName } from "../utils/slug";
 
 const InviteeDetailPage = () => {
   const { id } = useParams();
   const { getInvitee, deleteInvitee, loading } = useInvitees();
+  const { role } = useAuth();
+  const isReadOnly = role === "CO_ADMIN";
   const guest = getInvitee(id);
   const navigate = useNavigate();
   const cardRef = useRef(null);
@@ -34,7 +38,7 @@ const InviteeDetailPage = () => {
         cacheBust: true,
       });
       const link = document.createElement("a");
-      link.download = `invitation-${guest.name.replace(/\s+/g, "-").toLowerCase()}.png`;
+      link.download = `invitation-${slugifyName(guest.name)}.png`;
       link.href = dataUrl;
       link.click();
     } finally {
@@ -43,7 +47,7 @@ const InviteeDetailPage = () => {
   };
 
   const onCopyLink = async () => {
-    const url = `${window.location.origin}/invitation/${guest.id}`;
+    const url = `${window.location.origin}/invitation/${slugifyName(guest.name)}-${guest.id}`;
     try {
       await navigator.clipboard.writeText(url);
       setCopied(true);
@@ -136,20 +140,24 @@ const InviteeDetailPage = () => {
               <Copy className="w-4 h-4" />
               {copied ? "Lien copié !" : "Copier le lien public"}
             </button>
-            <button
-              onClick={() => navigate(`/admin/invites/${guest.id}/modifier`)}
-              className="w-full flex items-center justify-center gap-2 border border-beige-dark text-secondary font-semibold text-sm py-2.5 rounded-full hover:bg-beige transition-colors"
-            >
-              <Pencil className="w-4 h-4" />
-              Modifier
-            </button>
-            <button
-              onClick={onDelete}
-              className="w-full flex items-center justify-center gap-2 text-red-600 font-semibold text-sm py-2.5 rounded-full hover:bg-red-50 transition-colors"
-            >
-              <Trash2 className="w-4 h-4" />
-              Supprimer l'invité
-            </button>
+            {!isReadOnly && (
+              <>
+                <button
+                  onClick={() => navigate(`/admin/invites/${guest.id}/modifier`)}
+                  className="w-full flex items-center justify-center gap-2 border border-beige-dark text-secondary font-semibold text-sm py-2.5 rounded-full hover:bg-beige transition-colors"
+                >
+                  <Pencil className="w-4 h-4" />
+                  Modifier
+                </button>
+                <button
+                  onClick={onDelete}
+                  className="w-full flex items-center justify-center gap-2 text-red-600 font-semibold text-sm py-2.5 rounded-full hover:bg-red-50 transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Supprimer l'invité
+                </button>
+              </>
+            )}
           </div>
 
           <p className="text-[11px] text-secondary/40 leading-relaxed">

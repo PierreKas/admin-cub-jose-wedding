@@ -16,12 +16,12 @@ export const InviteesProvider = ({ children }) => {
   const [invitees, setInvitees] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // The full roster is admin-only (see JwtAuthFilter) - a Protocol account
-  // never needs it, only single-invitee lookups after a scan (getInvitee
-  // below reads from this list, but Protocol's flow never calls it; it
-  // reads straight off the scan/checkin API responses instead).
+  // The full roster is admin/co-admin only (see JwtAuthFilter) - a Protocol
+  // account never needs it, only single-invitee lookups after a scan
+  // (getInvitee below reads from this list, but Protocol's flow never calls
+  // it; it reads straight off the scan/checkin API responses instead).
   const refresh = useCallback(async () => {
-    if (!isAuthenticated || role !== "ADMIN") {
+    if (!isAuthenticated || !["ADMIN", "CO_ADMIN"].includes(role)) {
       setInvitees([]);
       setLoading(false);
       return;
