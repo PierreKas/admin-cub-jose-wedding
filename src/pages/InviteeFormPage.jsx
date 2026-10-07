@@ -6,11 +6,13 @@ import { useInvitees } from "../hooks/useInvitees";
 import { useTables } from "../hooks/useTables";
 
 const CIVILITIES = ["", "Mme", "Mr", "Rév", "Hon"];
+const TABLE_CAPACITY = 10;
+const seatsFor = (invitee) => (invitee.type === "couple" ? 2 : 1);
 
 const InviteeFormPage = () => {
   const { id } = useParams();
   const isEdit = Boolean(id);
-  const { getInvitee, addInvitee, updateInvitee, loading } = useInvitees();
+  const { invitees, getInvitee, addInvitee, updateInvitee, loading } = useInvitees();
   const { items: tables } = useTables();
   const existing = isEdit ? getInvitee(id) : null;
   const navigate = useNavigate();
@@ -39,10 +41,22 @@ const InviteeFormPage = () => {
   }
   if (isEdit && !existing) return <Navigate to="/admin/invites" replace />;
 
+  // Sieges deja occupes sur une table, sans compter cet invite lui-meme
+  // (pour qu'une modification qui ne change rien a sa table ne se bloque
+  // pas elle-meme).
+  const occupiedSeats = (tableName) =>
+    invitees
+      .filter((g) => g.table === tableName && g.id !== existing?.id)
+      .reduce((sum, g) => sum + seatsFor(g), 0);
+
   const onSubmit = async (e) => {
     e.preventDefault();
     if (!name.trim()) {
       setError("Le nom de l'invité est obligatoire.");
+      return;
+    }
+    if (table && occupiedSeats(table) + seatsFor({ type }) > TABLE_CAPACITY) {
+      setError("Cette table est déjà complète.");
       return;
     }
     setError("");
@@ -157,12 +171,19 @@ const InviteeFormPage = () => {
             className="w-full rounded-lg border border-beige-dark bg-beige/40 px-4 py-2.5 text-sm text-secondary outline-none focus:border-chocolate"
           >
             <option value="">Aucune table assignée</option>
-            {tables.map((t) => (
-              <option key={t.id} value={t.name}>
-                {t.name}
-              </option>
-            ))}
+            {tables.map((t) => {
+              const occupied = occupiedSeats(t.name);
+              const full = occupied >= TABLE_CAPACITY && t.name !== table;
+              return (
+                <option key={t.id} value={t.name} disabled={full}>
+                  {t.name} ({occupied}/{TABLE_CAPACITY}){full ? " - complète" : ""}
+                </option>
+              );
+            })}
           </select>
+          {table && occupiedSeats(table) + seatsFor({ type }) > TABLE_CAPACITY && (
+            <p className="text-red-600 text-xs mt-1.5">Cette table est déjà complète.</p>
+          )}
         </div>
 
         <button

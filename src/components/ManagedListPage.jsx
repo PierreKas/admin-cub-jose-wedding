@@ -20,6 +20,10 @@ const ManagedListPage = ({
   filters,
   // CO_ADMIN: hides the add-form and the rename/delete icons, leaving a pure read view.
   readOnly = false,
+  // Optional item => boolean - flags a card in red (e.g. a table over capacity).
+  flag,
+  // Optional label shown under the name on a flagged card.
+  flagLabel,
 }) => {
   const { items, loading, add, update, remove } = useStore();
   const [newName, setNewName] = useState("");
@@ -120,10 +124,16 @@ const ManagedListPage = ({
         <p className="text-secondary/50 text-sm">Chargement...</p>
       ) : visibleItems.length > 0 ? (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl">
-          {visibleItems.map((item) => (
+          {visibleItems.map((item) => {
+            const flagged = flag?.(item);
+            return (
             <div
               key={item.id}
-              className="bg-cream rounded-xl border border-beige-dark/60 p-4 flex items-center justify-between gap-3"
+              className={`rounded-xl border p-4 flex items-center justify-between gap-3 ${
+                flagged
+                  ? "bg-red-50 border-red-300"
+                  : "bg-cream border-beige-dark/60"
+              }`}
             >
               {editingId === item.id ? (
                 <input
@@ -135,10 +145,13 @@ const ManagedListPage = ({
                 />
               ) : (
                 <div className="min-w-0">
-                  <p className="font-semibold text-secondary truncate">
+                  <p className={`font-semibold truncate ${flagged ? "text-red-700" : "text-secondary"}`}>
                     {item.name}
                   </p>
                   {renderExtra && renderExtra(item)}
+                  {flagged && flagLabel && (
+                    <p className="text-xs font-semibold text-red-600 mt-0.5">{flagLabel}</p>
+                  )}
                 </div>
               )}
 
@@ -182,7 +195,8 @@ const ManagedListPage = ({
                 </div>
               )}
             </div>
-          ))}
+            );
+          })}
         </div>
       ) : (
         <div className="text-center py-16 bg-cream rounded-2xl border border-dashed border-beige-dark max-w-4xl">
