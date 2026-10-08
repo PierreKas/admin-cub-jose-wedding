@@ -59,14 +59,14 @@ const InvitationCard = forwardRef(({ guest }, ref) => {
             </div>
           )}
           <p className="text-xs sm:text-sm leading-relaxed text-chocolate-dark/80">
-            {wedding.familyIntro}
+            {wedding.familyIntro} qui s&apos;unissent l&apos;un à l&apos;autre.
           </p>
         </div>
 
         <div>
-          <p className="text-[10px] sm:text-xs italic text-chocolate/60 mb-1">
+          {/* <p className="text-[10px] sm:text-xs italic text-chocolate/60 mb-1">
             Qui s&apos;unissent l&apos;un à l&apos;autre
-          </p>
+          </p> */}
           <div className="flex flex-wrap items-baseline justify-center gap-x-2 gap-y-1">
             <p className="font-script text-xl sm:text-3xl text-chocolate">
               {wedding.groom}
