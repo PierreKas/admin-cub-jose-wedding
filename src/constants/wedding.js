@@ -15,7 +15,8 @@ export const wedding = {
   program: [
     {
       title: "Mariage civil",
-      place: "Commune de Ngaliema",
+      place:
+        "BRIKIN, Espace KABANDA, Av Zundu N°3. Réf: Derrière KinMarché BRIKIN",
       time: "09H00",
     },
     {
