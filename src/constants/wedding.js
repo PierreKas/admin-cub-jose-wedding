@@ -18,6 +18,7 @@ export const wedding = {
       place:
         "BRIKIN, Espace KABANDA, Av Zundu N°3. Réf: Derrière KinMarché BRIKIN",
       time: "09H00",
+      dressCode: "Chocolat & Beige",
     },
     {
       title: "Mariage religieux",
@@ -30,9 +31,10 @@ export const wedding = {
       place:
         "Salle polyvalente Félix Antoine Tshisekedi Tshilombo. Réf: TASOK.",
       time: "20H00",
+      dressCode: "Noir & Or",
     },
   ],
-  dressCode: "Black & Gold",
+  // dressCode: "Black & Gold",
   note: "De préférence, soyez muni de votre pièce d'identité.",
   contacts: ["+243 998 675 827", "+243 998 821 012", "+243 993 349 555"],
 };

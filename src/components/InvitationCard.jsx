@@ -113,17 +113,25 @@ const InvitationCard = forwardRef(({ guest }, ref) => {
               <span className="inline-block bg-accent text-chocolate-dark font-bold text-[11px] sm:text-sm px-3 sm:px-4 py-0.5 sm:py-1 rounded mt-1">
                 {item.time}
               </span>
+
+              {item.dressCode && (
+                <div className="flex justify-center mt-3 sm:mt-4">
+                  <span className="inline-flex items-center gap-1.5 border border-accent text-accent text-[10px] sm:text-xs font-semibold uppercase tracking-wide px-3 py-1 rounded-full">
+                    Dress code : {item.dressCode}
+                  </span>
+                </div>
+              )}
             </div>
           ))}
         </div>
 
-        {wedding.dressCode && (
+        {/* {wedding.dressCode && (
           <div className="flex justify-center mt-3 sm:mt-4">
             <span className="inline-flex items-center gap-1.5 border border-accent text-accent text-[10px] sm:text-xs font-semibold uppercase tracking-wide px-3 py-1 rounded-full">
               Dress code : {wedding.dressCode}
             </span>
           </div>
-        )}
+        )} */}
 
         {wedding.note && (
           <p className="text-center text-[9px] sm:text-[11px] text-cream/50 leading-snug mt-3">
