@@ -31,7 +31,7 @@ export const wedding = {
       place:
         "Salle polyvalente Félix Antoine Tshisekedi Tshilombo. Réf: TASOK.",
       time: "20H00",
-      dressCode: "Noir & Or",
+      dressCode: "Noir & Dorée",
     },
   ],
   // dressCode: "Black & Gold",
