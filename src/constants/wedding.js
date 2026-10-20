@@ -37,4 +37,11 @@ export const wedding = {
   // dressCode: "Black & Gold",
   note: "De préférence, soyez muni de votre pièce d'identité.",
   contacts: ["+243 998 675 827", "+243 998 821 012", "+243 993 349 555"],
+  // Texte de la page publique d'annonce (/information) - pas une invitation,
+  // partageable a des non-invites, donc volontairement distinct de
+  // familyIntro (qui s'adresse a un invite nomme sur sa carte).
+  announcement: [
+    "La famille Jérémie BAFUNYEMBAKA KASANANI a la joie de vous annoncer le mariage de leurs enfants Christian et Joséphine, qui sera célébré le samedi 21 novembre 2026 à Kinshasa.",
+    "La famille vous remercie de vous unir à elle dans la joie et la prière à l'occasion de cet heureux événement.",
+  ],
 };

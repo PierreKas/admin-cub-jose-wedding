@@ -16,6 +16,7 @@ import TablesPage from "./pages/TablesPage";
 import DrinksPage from "./pages/DrinksPage";
 import UsersPage from "./pages/UsersPage";
 import PublicInvitationPage from "./pages/PublicInvitationPage";
+import WeddingInfoPage from "./pages/WeddingInfoPage";
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
                     path="/invitation/:id"
                     element={<PublicInvitationPage />}
                   />
+                  <Route path="/information" element={<WeddingInfoPage />} />
 
                   <Route
                     path="/admin"
