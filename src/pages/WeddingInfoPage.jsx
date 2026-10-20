@@ -23,13 +23,19 @@ const WeddingInfoPage = () => {
           <Monogram size="w-24 h-24 sm:w-28 sm:h-28 mb-3" />
 
           <p className="text-[10px] sm:text-xs uppercase tracking-widest text-chocolate/50 mb-2">
-            Faire-part de mariage
+            Annonce du mariage de
           </p>
 
           <div className="flex flex-wrap items-baseline justify-center gap-x-3 gap-y-1 mb-6">
-            <p className="font-script text-4xl sm:text-5xl text-chocolate">{wedding.groom}</p>
-            <span className="text-chocolate/40 font-script text-3xl sm:text-4xl">&amp;</span>
-            <p className="font-script text-4xl sm:text-5xl text-chocolate">{wedding.bride}</p>
+            <p className="font-script text-4xl sm:text-5xl text-chocolate">
+              {wedding.groom}
+            </p>
+            <span className="text-chocolate/40 font-script text-3xl sm:text-4xl">
+              &amp;
+            </span>
+            <p className="font-script text-4xl sm:text-5xl text-chocolate">
+              {wedding.bride}
+            </p>
           </div>
 
           <div className="space-y-4 text-sm sm:text-base leading-relaxed text-chocolate-dark/85 max-w-md">
