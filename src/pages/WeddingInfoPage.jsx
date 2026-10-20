@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Monogram from "../components/Monogram";
 import FlowerRain from "../components/FlowerRain";
 import { wedding } from "../constants/wedding";
@@ -11,6 +11,18 @@ import { wedding } from "../constants/wedding";
  * reads as the same event, just without any personal data baked in.
  */
 const WeddingInfoPage = () => {
+  // index.html's <title> says "Invitation du..." (the right default for
+  // every other route) - this is the one page that isn't an invitation,
+  // so it overrides the tab title while mounted and restores the default
+  // on unmount (React Router doesn't touch document.title on its own).
+  useEffect(() => {
+    const previousTitle = document.title;
+    document.title = "Annonce du Mariage Christian & Joséphine";
+    return () => {
+      document.title = previousTitle;
+    };
+  }, []);
+
   return (
     <div className="min-h-screen bg-secondary bg-linear-to-br from-secondary to-chocolate flex flex-col items-center justify-center px-4 py-12">
       <FlowerRain />
