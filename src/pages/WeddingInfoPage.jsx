@@ -31,7 +31,7 @@ const WeddingInfoPage = () => {
         <div className="pointer-events-none absolute -top-16 -left-16 w-48 h-48 rounded-full border border-beige-dark/60" />
         <div className="pointer-events-none absolute -bottom-20 -right-10 w-56 h-56 rounded-full border border-beige-dark/40" />
 
-        <div className="relative flex flex-col items-center text-center p-8 sm:p-12 bg-gradient-to-br from-beige to-cream">
+        <div className="relative flex flex-col items-center text-center p-8 sm:p-12 bg-linear-to-br from-beige to-cream">
           <Monogram size="w-24 h-24 sm:w-28 sm:h-28 mb-3" />
 
           <p className="text-[10px] sm:text-xs uppercase tracking-widest text-chocolate/50 mb-2">
