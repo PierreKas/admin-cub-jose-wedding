@@ -30,7 +30,7 @@ export const wedding = {
       title: "Soirée dansante",
       place:
         "Salle polyvalente Félix Antoine Tshisekedi Tshilombo. Réf: TASOK.",
-      time: "20H00",
+      time: "19H00",
       dressCode: "Noir & Dorée",
     },
   ],
